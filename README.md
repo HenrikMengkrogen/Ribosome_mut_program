@@ -5,7 +5,7 @@ RNA design tool using ViennaRNA's folding and MFE algorithms to generate RNA seq
 ## Quick Start (macOS x86_64)
 
 ```bash
-git clone https://github.com/yourname/Ribologic.git && cd Ribologic && bash setup.sh
+https://github.com/HenrikMengkrogen/Ribosome_mut_program.git && cd Ribosome_mut_program && bash setup.sh
 ```
 
 That's it. The setup script will:
