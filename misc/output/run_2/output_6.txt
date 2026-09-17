@@ -1,0 +1,10 @@
+==== FINAL (run 2) ====
+sequence      : GCCAUCAGUCGCCCGUCCCAAGCCGGGAUAAAAUGGGAGGGGGCGGGAAACCGCCUAACCAUGCCGACUGAUGGCAGCUGCCAUCAGUCGGCGUGGACUGUAGAACACUGCCAAUGCCGGUCCCAAGCCCGGAUAAAAGUGGAGGGUACAGUCCACGCUAUCCAGGUACACUAAGUAGUGUAUCUCCGUGCGAGACGGUCGGGUCCAUAGCUAAUUCGUUAGUUAUGUCGAGUAGAGUGUGGGCUCGUACGGGGUGGUGAAGCCUCCACGCCACCGGAUAAGACUGGCCUGCGACUGAAGGAGGCACGGUCGGCCAUCCGUUUCGACGGGUGGCGGAUCCUUGAAACCAAGGAUCCCAGGCCAGUCU
+target        : (((((((((((...(((((.....)))))...((((....((((((....))))))..))))..)))))))))))...............((((((((((((...((((.......((((........)))).....)))).....))))))))))))(((((((((((((((()))))))))))(((((((((.(.((...(((((((((((((..))))))))))..)).)...))...).)))))))))(((((((..[[[[[[.))))))))))))(((((((((((((((((..]]]]]].))))))((((((((((..))))))))))((((((((((())))))))))))))))))))))
+mfe structure : (((((((((((...(((((.....)))))...((((....((((((....))))))..))))..)))))))))))...............((((((((((((...((((.......((((........)))).....)))).....)))))))))))).((((.((((((((....)))))))).(((((((((.........(((((((((((....)))))))))..))............)))))))))(((((((..[[[[[[.))))))))))).(((((((((((((((((..]]]]]].))))))(((((((((....)))))))))(((((((((....))))))))))))))))))))
+bp_distance   : 12
+mfe           : -154.50
+slices        : 20
+Ribosomal RNA used: true
+ribosome identity  : 26.3% (56 mismatched positions)
+ribosome mismatches: [158, 160, 161, 163, 164, 165, 166, 167, 168, 169, 170, 171, 173, 175, 176, 178, 180, 182, 184, 275, 278, 279, 280, 281, 282, 283, 284, 285, 287, 288, 334, 335, 336, 337, 338, 339, 340, 341, 342, 346, 347, 348, 349, 350, 351, 352, 353, 354, 355, 357, 359, 360, 361, 362, 363, 366]

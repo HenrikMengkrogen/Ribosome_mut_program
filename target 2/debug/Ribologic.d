@@ -1,0 +1,1 @@
+/Users/henrikmengkrogen/Library/Mobile\ Documents/com~apple~CloudDocs/Koding/Rust/Projects/Ribologic_3/target/debug/Ribologic: /Users/henrikmengkrogen/Library/Mobile\ Documents/com~apple~CloudDocs/Koding/Rust/Projects/Ribologic_3/src/main.rs

@@ -1,0 +1,10 @@
+==== FINAL (run 2) ====
+sequence      : GGCGGCCAAUCCCAUUCCAAAAGAUUGGAAUGGCCGUGCGAGACGGUCGGGUCCAUAGCUAAUUCGUUAGUUAUGUCGAGUAGAGUGUGGGCUCGUACGGGGUGGUGAAGCCUCCACGCCACCGGUUGGCCGCUGUUAAAGGCAGCGACUGAAGGAGGCACGGUCGGCCAUCCGUUUCGACGGGUGGCGGUAGUACAAAAAUGUACUACCCUGCCUUUAAU
+target        : (((((((((((((((((((((()))))))))))(((((((((.(.((...(((((((((((((..))))))))))..)).)...))...).)))))))))(((((((..[[[[[[.))))))))))))))))))(((((((((((((((((..]]]]]].))))))((((((((((..))))))))))((((((((((())))))))))))))))))))))
+mfe structure : ((((((((((((((((((((....)))))))))(((((((((.........(((((((((((....)))))))))..))............)))))))))(((((((..[[[[[[.))))))))))))))))))(((((((((((((((((..]]]]]].))))))(((((((((....)))))))))(((((((((....))))))))))))))))))))
+bp_distance   : 10
+mfe           : -98.20
+slices        : 13
+Ribosomal RNA used: true
+ribosome identity  : 28.4% (63 mismatched positions)
+ribosome mismatches: [2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 14, 15, 16, 17, 19, 21, 23, 25, 27, 28, 29, 30, 31, 32, 124, 125, 126, 127, 128, 130, 132, 133, 134, 135, 137, 138, 139, 141, 144, 189, 190, 191, 192, 193, 195, 197, 199, 200, 202, 203, 204, 205, 206, 207, 211, 212, 213, 214, 215, 216, 217, 219, 220]
