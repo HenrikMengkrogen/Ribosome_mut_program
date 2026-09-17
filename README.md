@@ -1,6 +1,6 @@
 # Ribologic
 
-RNA design tool using ViennaRNA's inverse folding and MFE algorithms.
+RNA design tool using ViennaRNA's folding and MFE algorithms to generate RNA sequences.
 
 ## Quick Start (macOS x86_64)
 
