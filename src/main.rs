@@ -26,17 +26,6 @@ fn main() {
     const WOBBLE_FREQUENCY: f64 = 0.0;
     const N_RUNS: usize = 3; // Overall times the script should run
 
-    let py_script = "../../../../Python/Thesis/pyfurnace scripts/2H-AE-Broccoli-base.py";   
-    let py_status = Command::new("python3")
-        .arg(py_script)
-        .status()
-        .expect("failed to spawn python3");
-
-    if !py_status.success() {
-        eprintln!("python script exited with status {}", py_status);
-        std::process::exit(1);
-    }
-    println!("=== python design completed, reading input.txt ===");
 
     unsafe {
         let mut md: vrna_md_t = std::mem::zeroed();
@@ -51,6 +40,8 @@ fn main() {
         println!("window_size={}", md.window_size);
     }
 
+    //Imports file here -> Note that they have to be formatted with both Sequence and Structure. Files need to be named "input_*.txt"
+    
     let mut input_files: Vec<_> = fs::read_dir("../misc")
         .expect("Failed to read ../misc directory")
         .filter_map(|entry| {
