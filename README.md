@@ -36,7 +36,7 @@ This means the compiled binary can be copied to any x86_64 Mac and run without i
 ## Project structure
 
 ```
-Ribologic/
+Ribosomal_mut_program/
 ├── Cargo.toml
 ├── build.rs              # Links static libraries
 ├── setup.sh              # One-command setup
