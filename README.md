@@ -4,6 +4,8 @@ RNA design tool using ViennaRNA's folding and MFE algorithms to generate RNA seq
 
 It has two functions -> Generate from undefined nucleotides 'N's, 'K's and 'S's. And generate from a preferred start sequence, in this case the Ribosomal large subunit rRNA sequence when RIBOSMAL_RNA=True. This also outputs a percentage score of how much of the original sequence remains. 
 
+NB! The python folder and script is not in use!
+
 ## Quick Start (macOS x86_64)
 
 ```bash
