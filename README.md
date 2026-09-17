@@ -1,4 +1,4 @@
-# Ribologic
+# Ribosomal Mutation Program
 
 RNA design tool using ViennaRNA's folding and MFE algorithms to generate RNA sequences.
 
