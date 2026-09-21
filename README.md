@@ -7,11 +7,12 @@ It has two functions -> Generate from undefined nucleotides 'N's, 'K's and 'S's.
 NB! The python folder and script is not in use!
 
 ## Quick Start (macOS x86_64)
+Copy-paste this into your terminal at your desired location:
 
 ```bash
 git clone https://github.com/HenrikMengkrogen/Ribosome_mut_program.git && cd Ribosome_mut_program && bash setup.sh
 ```
-
+Rust should automatically be installed, but if not paste in this as well:
 ```bash
 curl https://sh.rustup.rs -sSf | sh
 ```
