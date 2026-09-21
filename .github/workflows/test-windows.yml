@@ -83,7 +83,7 @@ jobs:
 
 
 
-          make -j"$(nproc)"
+          make 
 
           RNA_ARCHIVE="$(find . -type f -name libRNA.a -print -quit)"
 
