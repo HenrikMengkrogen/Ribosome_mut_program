@@ -40,6 +40,12 @@ All dependencies (ViennaRNA, GSL, MPFR, GMP) are **statically linked** into the 
 ```
 
 This means the compiled binary can be copied to any x86_64 Mac and run without installing anything.
+## How to use
+Go to ./main/src and then type
+```bash
+cargo run
+```
+
 
 ## Project structure
 
