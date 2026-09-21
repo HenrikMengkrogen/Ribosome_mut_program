@@ -61,7 +61,9 @@ jobs:
           # MPFR
           cd "$BUILD_ROOT/src"
           curl -fL -o mpfr-4.2.1.tar.xz \
- 	     https://www.mpfr.org/mpfr-4.2.1/mpfr-4.2.1.tar.xz
+             https://www.mpfr.org/mpfr-4.2.1/mpfr-4.2.1.tar.xz
+
+ 	    
 
           tar -xf mpfr-4.2.1.tar.xz
           cd mpfr-4.2.1
@@ -77,7 +79,9 @@ jobs:
 
           # GSL
           cd "$BUILD_ROOT/src"
-          curl -LO https://ftp.gnu.org/gnu/gsl/gsl-2.8.tar.gz
+          curl -fL -o gsl-2.8.tar.gz \
+            https://ftp.gnu.org/gnu/gsl/gsl-2.8.tar.gz
+
           tar -xf gsl-2.8.tar.gz
           cd gsl-2.8
 
@@ -95,7 +99,7 @@ jobs:
           # Use the same ViennaRNA version as your vendored headers.
           #
           cd "$BUILD_ROOT/src"
-          curl -L \
+          curl -fL \
             -o ViennaRNA-2.7.0.tar.gz \
             https://github.com/ViennaRNA/ViennaRNA/releases/download/v2.7.0/ViennaRNA-2.7.0.tar.gz
 
