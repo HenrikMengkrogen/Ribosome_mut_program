@@ -1,0 +1,77 @@
+name: Test all platforms
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Intel macOS
+          - name: macOS Intel
+            os: macos-13
+            target: x86_64-apple-darwin
+
+          # Apple Silicon macOS
+          - name: macOS Apple Silicon
+            os: macos-14
+            target: aarch64-apple-darwin
+
+          # 64-bit Linux
+          - name: Linux x86_64
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+
+          # 64-bit Windows using the MSVC ABI
+          - name: Windows x86_64 MSVC
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust target
+        shell: bash
+        run: rustup target add ${{ matrix.target }}
+
+      # bindgen requires libclang.
+      - name: Install libclang on Linux
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libclang-dev
+
+      - name: Install LLVM/libclang on macOS
+        if: runner.os == 'macOS'
+        run: |
+          brew install llvm
+          echo "LIBCLANG_PATH=$(brew --prefix llvm)/lib" >> "$GITHUB_ENV"
+
+      - name: Install LLVM/libclang on Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          choco install llvm -y
+          "LIBCLANG_PATH=C:\Program Files\LLVM\bin" >> $env:GITHUB_ENV
+
+      - name: Show selected native-library directory
+        shell: bash
+        run: |
+          echo "Target: ${{ matrix.target }}"
+          find "vendor/RNAlib/prebuilt/${{ matrix.target }}" \
+            -maxdepth 1 \
+            -type f \
+            -print \
+            || true
+
+      - name: Run tests
+        run: cargo test --locked --target ${{ matrix.target }}
+
