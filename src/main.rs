@@ -934,7 +934,7 @@ fn hill_climb_design(
             (energy_of_target_structure(&candidate_string, target_structure) - guard_result.mfe)
                 .max(0.0);
 
-        // --- Two-level acceptance ---
+        
         let accept = if cand_dist < current_dist {
             true
         } else if cand_dist == current_dist {
@@ -950,7 +950,7 @@ fn hill_climb_design(
         temperature_for_testing.push(temp);
         current_dist_for_testing.push(current_dist);
         
-        // Lets see if the break conditions is better here:
+        
         let current_bytes = current_structure.as_bytes();
         let mut all_mismatches = Vec::new();
             for i in 0..current_bytes.len() {
@@ -1618,7 +1618,7 @@ fn _process_stem_loop(
     j: usize,
     out: &mut Vec<Substructure>,
 ) {
-    // Walk inward ONLY through () pairs — never [] pairs.
+    
     let mut i_inner = i;
     let mut j_inner = j;
     while i_inner + 1 < j_inner
@@ -1786,19 +1786,19 @@ fn compute_pf_defect(seq: &str, target: &str) -> (f64, Vec<f64>, f64, f64) {
         );
         assert!(!fc.is_null(), "fold_compound returned null");
 
-        // 1. MFE first (required before rescaling)
+        
         let mut mfe_struct = vec![0i8; n + 1];
         let mfe = vrna_mfe(fc, mfe_struct.as_mut_ptr());
 
-        // 2. Rescale Boltzmann weights using the real MFE energy
+        
         let mut mfe_scaled: f64 = mfe as f64;
         vrna_exp_params_rescale(fc, &mut mfe_scaled);
 
-        // 3. Partition function (fills exp_matrices->probs)
+        
         let mut pf_struct = vec![0i8; n + 1];
         let _pf_energy = vrna_pf(fc, pf_struct.as_mut_ptr());
 
-        // 4. Base-pair probability matrix
+        
         let exp_matrices = (*fc).exp_matrices;
         assert!(!exp_matrices.is_null(), "exp_matrices is null");
 
@@ -1807,7 +1807,7 @@ fn compute_pf_defect(seq: &str, target: &str) -> (f64, Vec<f64>, f64, f64) {
         assert!(!probs_ptr.is_null(), "probs is null after vrna_pf");
         assert!(!iindx_ptr.is_null(), "iindx is null");
 
-        // 5. Per-position pairing probability and defect
+        
         let mut defects = vec![0.0_f64; n];
         let mut cost = 0.0_f64;
 
@@ -1823,8 +1823,8 @@ fn compute_pf_defect(seq: &str, target: &str) -> (f64, Vec<f64>, f64, f64) {
             }
             p_paired = p_paired.min(1.0);
 
-            // still uses the FULL target: '[' and ']' are != '.', so pk positions
-            // correctly count as "should be paired" even though VRNA can't fold them itself
+            
+            
             let should_be_paired = target_bytes[i] != b'.';
             defects[i] = if should_be_paired {
                 (1.0 - p_paired).max(0.0)
@@ -1834,7 +1834,7 @@ fn compute_pf_defect(seq: &str, target: &str) -> (f64, Vec<f64>, f64, f64) {
             cost += defects[i];
         }
 
-        // 6. Energy of the target structure — VRNA-safe version (pk brackets stripped)
+        
         let target_c = CString::new(target_no_pk).expect("target has interior NUL");
         let e_target = vrna_eval_structure(fc, target_c.as_ptr()) as f64;
 
@@ -1860,10 +1860,10 @@ fn mutate_ks(seq: &str, pair_map: &HashMap<usize, usize>) -> String {
         }
 
         let Some(&j) = pair_map.get(&i) else {
-            continue; // unpaired — leave as-is
+            continue; 
         };
         if resolved[j] {
-            continue; // already handled from the other side
+            continue; 
         }
 
         match (chars[i], chars[j]) {
@@ -1878,8 +1878,7 @@ fn mutate_ks(seq: &str, pair_map: &HashMap<usize, usize>) -> String {
                 out[j] = b;
             }
             _ => {
-                // partner isn't the matching ambiguity code (e.g. K paired with S,
-                // or K paired with a fixed base) — leave both untouched.
+                
                 continue;
             }
         }
@@ -1956,7 +1955,7 @@ pub fn fold_with_pkplex(seq: &str) -> Vec<PkPrediction> {
             libc::free(result_ptr as *mut c_void);
         }
 
-        // options struct is flat POD with no owned inner allocations — safe to free directly
+        
         libc::free(options as *mut c_void);
 
         vrna_fold_compound_free(fc);
@@ -2239,7 +2238,7 @@ fn mutate_ribosome(seq_in: &str, structure: &str, n_positions: &[usize]) -> Stri
                 mut_seq[i] = choice;
                 mut_seq[j] = *comp_dict.get(&choice).unwrap();
 
-                // neighbouring pair i+1 / j-1
+                
                 if i + 1 < j {
                     if let Some(&partner_of_next) = pair_map.get(&(i + 1)) {
                         if partner_of_next == j - 1
