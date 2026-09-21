@@ -81,28 +81,34 @@ jobs:
             --without-swig \
             --without-svm
 
-          # Patch ViennaRNA 2.7.0 legacy callback declarations so that its
-          # header and implementation agree. The empty callback argument list
-          # intentionally permits callbacks for different internal node types.
-          sed -i \
-            's/void (\*freeNode)(void \*)/void (*freeNode)()/g' \
+                    # ViennaRNA 2.7.0 has incompatible legacy callback declarations on
+          # recent MinGW GCC. Make the implementation match lists.h, whose
+          # empty callback parameter lists permit its internal callback types.
+          perl -0pi -e '
+            s{
+              (lst_kill\s*$\s*LIST\s*\*\s*l\s*,\s*)
+              void\s*\(\s*\*\s*freeNode\s*$\s*$\s*void\s*\*\s*$
+            }{$1void (*freeNode)()}gx;
+          ' src/ViennaRNA/datastructures/lists.c
+
+          perl -0pi -e '
+            s{
+              (lst_mergesort\s*$\s*LIST\s*\*\s*l\s*,\s*)
+              int\s*\(\s*\*\s*cmp_func\s*$\s*$\s*void\s*\*\s*,\s*void\s*\*\s*$
+            }{$1int (*cmp_func)()}gx;
+          ' src/ViennaRNA/datastructures/lists.c
+
+          # Fail clearly if the expected compatibility patch was not applied.
+          grep -A3 -n 'lst_kill(LIST' \
             src/ViennaRNA/datastructures/lists.c
 
-          sed -i \
-            's/int (\*cmp_func)(void \*, void \*)/int (*cmp_func)()/g' \
+          grep -A3 -n 'lst_mergesort(LIST' \
             src/ViennaRNA/datastructures/lists.c
 
-          grep -nE 'lst_kill|lst_mergesort' \
-            src/ViennaRNA/datastructures/lists.h \
-            src/ViennaRNA/datastructures/lists.c
-
-
-          grep -nE 'lst_kill|lst_mergesort' \
-            src/ViennaRNA/datastructures/lists.h
-
-          # ViennaRNA 2.7.0 has generated compatibility headers that can race
+          # Build sequentially because generated ViennaRNA headers can race
           # under parallel GNU Make builds on MinGW/MSYS2.
           make
+
 
 
           RNA_ARCHIVE="$(find . -type f -name libRNA.a -print -quit)"
