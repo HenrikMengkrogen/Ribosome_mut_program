@@ -1,7 +1,10 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::ffi::{CStr, CString};
-use librna_sys::*;
+mod ffi;
+use ffi::*;
+
+//use librna_sys::*;
 use rand::RngExt;
 use rand::seq::IndexedRandom;
 use std::os::raw::c_void;
