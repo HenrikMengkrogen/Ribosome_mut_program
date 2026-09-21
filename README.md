@@ -9,7 +9,7 @@ NB! The python folder and script is not in use!
 ## Quick Start (macOS x86_64)
 
 ```bash
-https://github.com/HenrikMengkrogen/Ribosome_mut_program.git && cd Ribosome_mut_program && bash setup.sh
+git clone https://github.com/HenrikMengkrogen/Ribosome_mut_program.git && cd Ribosome_mut_program && bash setup.sh
 ```
 
 ```bash
