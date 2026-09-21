@@ -1,71 +1,156 @@
 # Ribosomal Mutation Program
 
-RNA design tool using ViennaRNA's folding and MFE algorithms to generate RNA sequences.
+A Rust-based RNA sequence design tool built with the ViennaRNA library.
 
-It has two functions -> Generate from undefined nucleotides 'N's, 'K's and 'S's. And generate from a preferred start sequence, in this case the Ribosomal large subunit rRNA sequence when RIBOSMAL_RNA=True. This also outputs a percentage score of how much of the original sequence remains. 
+The program uses ViennaRNA folding and minimum-free-energy (MFE) algorithms to generate RNA sequences that match a supplied dot-bracket secondary structure.
 
-NB! The python folder and script is not in use!
+> **Note:** The `python/` folder and Python script are legacy files and are not used by the current program.
 
-## Quick Start (macOS x86_64)
-Copy-paste this into your terminal at your desired location:
+## Features
 
-```bash
-git clone https://github.com/HenrikMengkrogen/Ribosome_mut_program.git && cd Ribosome_mut_program && bash setup.sh
-```
-Rust should automatically be installed, but if not paste in this as well:
-```bash
-curl https://sh.rustup.rs -sSf | sh
-```
+The program supports two sequence-generation modes:
 
+1. **Generate from ambiguous nucleotides**  
+   Generate sequences from an input sequence containing ambiguous RNA nucleotide symbols such as:
 
+   - `N` — any nucleotide
+   - `K` — `G` or `U`
+   - `S` — `G` or `C`
 
-That's it. The setup script will:
-1. Install Rust (if needed)
-2. Install Homebrew + dependencies (if vendored libraries aren't included)
-3. Build and run the project
+2. **Generate from a preferred starting sequence**  
+   When `RIBOSOMAL_RNA=True` is enabled in the program configuration, generation begins from the ribosomal large-subunit rRNA sequence.
+
+   The output includes a percentage score indicating how much of the original sequence remains in the generated sequence.
+
+## Supported platforms
+
+Prebuilt static ViennaRNA dependencies are included for:
+
+- macOS on `x86_64` / Intel Macs
+- Linux on `x86_64`
+
+The Linux build is tested in GitHub Actions.
+
+Apple Silicon Macs may be able to run the project through Rosetta, but native Apple Silicon support is not currently documented or guaranteed.
 
 ## Requirements
 
-- **macOS** on **x86_64** (Intel Mac)
-- ~500MB free disk space (for Rust toolchain + dependencies)
+### macOS
 
-## How it works
+- Intel Mac (`x86_64`)
+- Git
+- Approximately 500 MB of free disk space for the Rust toolchain and build files
 
-All dependencies (ViennaRNA, GSL, MPFR, GMP) are **statically linked** into the binary. The final executable has no external library dependencies — only macOS system libraries:
+### Linux
 
+- `x86_64` Linux
+- Git
+- Rust toolchain
+- Clang and `libclang` development files, required by Rust `bindgen`
+
+For Ubuntu or Debian-based Linux distributions:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y \
+  build-essential \
+  clang \
+  libclang-dev \
+  pkg-config \
+  git \
+  curl
 ```
-/usr/lib/libc++.1.dylib
-/usr/lib/libSystem.B.dylib
-/usr/lib/libz.1.dylib
-/usr/lib/libiconv.2.dylib
+
+## Quick start: macOS
+Clone the repository and run the setup script:
+```bash
+git clone https://github.com/HenrikMengkrogen/Ribosome_mut_program.git && cd Ribosome_mut_program && bash setup.sh
+```
+The setup script installs required tools when needed and builds the project.
+
+If Rust was not installed automatically, install it with:
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+After installation, restart your terminal or load Rust into the current shell:
+```bash
+source "$HOME/.cargo/env"
 ```
 
-This means the compiled binary can be copied to any x86_64 Mac and run without installing anything.
-## How to use
-Go to ./main/src and then type
+## Quick start: Linux
+Install the system requirements shown above, then install Rust if necessary:
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source "$HOME/.cargo/env"
+```
+```bash
+git clone https://github.com/HenrikMengkrogen/Ribosome_mut_program.git
+cd Ribosome_mut_program
+cargo run
+```
+
+## Running the program
+Run this command from the repository root, the directory containing Cargo.toml:
 ```bash
 cargo run
 ```
-Input files are found in ./main/misc and are labeled input_*. It is important that the file always contains sequence and structure as dot-bracket format. Once the sequence generation is complete the output file will be written out in ./main/misc/output/
-
-## Project structure
-
+For an optimized release build:
+```bash
+cargo run --release
 ```
-Ribosomal_mut_program/
+
+## Input and output files
+Input files are located in:
+```bash
+main/misc/
+```
+They are named with the input_ prefix.
+
+Each input file must contain:
+
+* An RNA sequence
+* A matching RNA secondary structure in dot-bracket notation
+
+For example:
+```bash
+Sequence: GGGAAACCC
+Structure : (((...)))
+```
+The sequence and structure must have the same length
+Generated output files are written to:
+```bash
+main/misc/output/
+```
+
+
+## Project Structure
+```bash
+Ribosome_mut_program/
 ├── Cargo.toml
-├── build.rs              # Links static libraries
-├── setup.sh              # One-command setup
-├── .cargo/config.toml    # Environment variables for build
+├── Cargo.lock
+├── build.rs
+├── setup.sh
 ├── src/
 │   └── main.rs
-└── vendor/RNAlib/        # Bundled static libraries + headers
-    ├── lib/
-    │   ├── libRNA.a       # ViennaRNA
-    │   ├── libgsl.a       # GNU Scientific Library
-    │   ├── libgslcblas.a
-    │   ├── libmpfr.a      # Multi-precision float
-    │   ├── libgmp.a       # GNU multi-precision
-    │   ├── libstdc++.a    # Stub (C++ provided by libc++)
-    │   └── libgomp.a      # Stub (OpenMP not used)
-    └── include/ViennaRNA/ # C headers for bindgen
+├── main/
+│   └── misc/
+│       ├── input_*.txt
+│       └── output/
+├── vendor/
+│   └── RNAlib/
+│       ├── include/
+│       │   └── ViennaRNA/          # ViennaRNA C headers
+│       └── prebuilt/
+│           ├── x86_64-apple-darwin/
+│           └── x86_64-unknown-linux-gnu/
+│               ├── libRNA.a
+│               ├── libgmp.a
+│               ├── libmpfr.a
+│               ├── libgsl.a
+│               └── libgslcblas.a
+└── .github/
+    └── workflows/
+        ├── build-linux-viennarna.yml
+        └── test-all-platforms.yml
+
 ```
