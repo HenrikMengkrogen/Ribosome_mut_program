@@ -1,0 +1,79 @@
+name: Test Windows
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test-windows:
+    runs-on: windows-latest
+
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up MSYS2 and MinGW
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-clang
+            mingw-w64-x86_64-libclang
+            mingw-w64-x86_64-pkgconf
+            mingw-w64-x86_64-gmp
+            mingw-w64-x86_64-mpfr
+            mingw-w64-x86_64-gsl
+            mingw-w64-x86_64-viennarna
+            git
+            curl
+            make
+            autoconf
+            automake
+            libtool
+            bison
+            flex
+
+      - name: Install Rust GNU target
+        shell: pwsh
+        run: |
+          rustup target add x86_64-pc-windows-gnu
+
+      - name: Show installed native libraries
+        run: |
+          ls -lah /mingw64/lib | grep -E 'RNA|gmp|mpfr|gsl' || true
+          ls -lah /mingw64/include/ViennaRNA || true
+
+      - name: Copy Windows libraries into expected vendor directory
+        run: |
+          set -euxo pipefail
+
+          OUT_DIR="$GITHUB_WORKSPACE/vendor/RNAlib/prebuilt/x86_64-pc-windows-gnu"
+
+          mkdir -p "$OUT_DIR"
+
+          cp /mingw64/lib/libRNA.a "$OUT_DIR/"
+          cp /mingw64/lib/libgmp.a "$OUT_DIR/"
+          cp /mingw64/lib/libmpfr.a "$OUT_DIR/"
+          cp /mingw64/lib/libgsl.a "$OUT_DIR/"
+          cp /mingw64/lib/libgslcblas.a "$OUT_DIR/"
+
+          ls -lah "$OUT_DIR"
+
+      - name: Build and test
+        run: |
+          set -euxo pipefail
+
+          export PATH="/mingw64/bin:$PATH"
+          export LIBCLANG_PATH="/mingw64/bin"
+
+          cargo test --target x86_64-pc-windows-gnu
+

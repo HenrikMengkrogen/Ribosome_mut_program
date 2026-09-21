@@ -7,25 +7,21 @@ use ffi::*;
 //use librna_sys::*;
 use rand::RngExt;
 use rand::seq::IndexedRandom;
-use std::os::raw::c_void;
 use rayon::prelude::*;
 use std::fs::{self, File};
 use std::io::Write;
+use std::os::raw::c_void;
 use std::path::Path;
 
-
-const RIBOSOMAL_RNA: bool = false; 
+const RIBOSOMAL_RNA: bool = false;
 // RIBOSOMA_SEQUENCE can be changed to any start sequence of desire. If it is longer than the structure the sequence will be sliced accordingly.
 const RIBOSOME_SEQUENCE: &str = "GGUUAAGCGACUAAGCGUACACGGUGGAUGCCCUGGCAGUCAGAGGCGAUGAAGGACGUGCUAAUCUGCGAUAAGCGUCGGUAAGGUGAUAUGAACCGUUAUAACCGGCGAUUUCCGAAUGGGGAAACCCAGUGUGUUUCGACACACUAUCAUUAACUGAAUCCAUAGGUUAAUGAGGCGAACCGGGGGAACUGAAACAUCUAAGUACCCCGAGGAAAAGAAAUCAACCGAGAUUCCCCCAGUAGCGGCGAGCGAACGGGGAGCAGCCCAGAGCCUGAAUCAGUGUGUGUGUUAGUGGAAGCGUCUGGAAAGGCGCGCGAUACAGGGUGACAGCCCCGUACACAAAAAUGCACAUGCUGUGAGCUCGAUGAGUAGGGCGGGACACGUGGUAUCCUGUCUGAAUAUGGGGGGACCAUCCUCCAAGGCUAAAUACUCCUGACUGACCGAUAGUGAACCAGUACCGUGAGGGAAAGGCGAAAAGAACCCCGGCGAGGGGAGUGAAAAAGAACCUGAAACCGUGUACGUACAAGCAGUGGGAGCACGCUUAGGCGUGUGACUGCGUACCUUUUGUAUAAUGGGUCAGCGACUUAUAUUCUGUAGCAAGGUUAACCGAAUAGGGGAGCCGAAGGGAAACCGAGUCUUAACUGGGCGUUAAGUUGCAGGGUAUAGACCCGAAACCCGGUGAUCUAGCCAUGGGCAGGUUGAAGGUUGGGUAACACUAACUGGAGGACCGAACCGACUAAUGUUGAAAAAUUAGCGGAUGACUUGUGGCUGGGGGUGAAAGGCCAAUCAAACCGGGAGAUAGCUGGUUCUCCCCGAAAGCUAUUUAGGUAGCGCCUCGUGAAUUCAUCUCCGGGGGUAGAGCACUGUUUCGGCAAGGGGGUCAUCCCGACUUACCAACCCGAUGCAAACUGCGAAUACCGGAGAAUGUUAUCACGGGAGACACACGGCGGGUGCUAACGUCCGUCGUGAAGAGGGAAACAACCCAGACCGCCAGCUAAGGUCCCAAAGUCAUGGUUAAGUGGGAAACGAUGUGGGAAGGCCCAGACAGCCAGGAUGUUGGCUUAGAAGCAGCCAUCAUUUAAAGAAAGCGUAAUAGCUCACUGGUCGAGUCGGCCUGCGCGGAAGAUGUAACGGGGCUAAACCAUGCACCGAAGCUGCGGCAGCGACGCUUAUGCGUUGUUGGGUAGGGGAGCGUUCUGUAAGCCUGCGAAGGUGUGCUGUGAGGCAUGCUGGAGGUAUCAGAAGUGCGAAUGCUGACAUAAGUAACGAUAAAGCGGGUGAAAAGCCCGCUCGCCGGAAGACCAAGGGUUCCUGUCCAACGUUAAUCGGGGCAGGGUGAGUCGACCCCUAAGGCGAGGCCGAAAGGCGUAGUCGAUGGGAAACAGGUUAAUAUUCCUGUACUUGGUGUUACUGCGAAGGGGGGACGGAGAAGGCUAUGUUGGCCGGGCGACGGUUGUCCCGGUUUAAGCGUGUAGGCUGGUUUUCCAGGCAAAUCCGGAAAAUCAAGGCUGAGGCGUGAUGACGAGGCACUACGGUGCUGAAGCAACAAAUGCCCUGCUUCCAGGAAAAGCCUCUAAGCAUCAGGUAACAUCAAAUCGUACCCCAAACCGACACAGGUGGUCAGGUAGAGAAUACCAAGGCGCUUGAGAGAACUCGGGUGAAGGAACUAGGCAAAAUGGUGCCGUAACUUCGGGAGAAGGCACGCUGAUAUGUAGGUGAGGUCCCUCGCGGAUGGAGCUGAAAUCAGUCGAAGAUACCAGCUGGCUGCAACUGUUUAUUAAAAACACAGCACUGUGCAAACACGAAAGUGGACGUAUACGGUGUGACGCCUGCCCGGUGCCGGAAGGUUAAUUGAUGGGGUUAGCGCAAGCGAAGCUCUUGAUCGAAGCCCCGGUAAACGGCGGCCGUAACUAUAACGGUCCUAAGGUAGCGAAAUUCCUUGUCGGGUAAGUUCCGACCUGCACGAAUGGCGUAAUGAUGGCCAGGCUGUCUCCACCCGAGACUCAGUGAAAUUGAACUCGCUGUGAAGAUGCAGUGUACCCGCGGCAAGACGGAAAGACCCCGUGAACCUUUACUAUAGCUUGACACUGAACAUUGAGCCUUGAUGUGUAGGAUAGGUGGGAGGCUUUGAAGUGUGGACGCCAGUCUGCAUGGAGCCGACCUUGAAAUACCACCCUUUAAUGUUUGAUGUUCUAACGUUGACCCGUAAUCCGGGUUGCGGACAGUGUCUGGUGGGUAGUUUGACUGGGGCGGUCUCCUCCUAAAGAGUAACGGAGGAGCACGAAGGUUGGCUAAUCCUGGUCGGACAUCAGGAGGUUAGUGCAAUGGCAUAAGCCAGCUUGACUGCGAGCGUGACGGCGCGAGCAGGUGCGAAAGCAGGUCAUAGUGAUCCGGUGGUUCUGAAUGGAAGGGCCAUCGCUCAACGGAUAAAAGGUACUCCGGGGAUAACAGGCUGAUACCGCCCAAGAGUUCAUAUCGACGGCGGUGUUUGGCACCUCGAUGUCGGCUCAUCACAUCCUGGGGCUGAAGUAGGUCCCAAGGGUAUGGCUGUUCGCCAUUUAAAGUGGUACGCGAGCUGGGUUUAGAACGUCGUGAGACAGUUCGGUCCCUAUCUGCCGUGGGCGCUGGAGAACUGAGGGGGGCUGCUCCUAGUACGAGAGGACCGGAGUGGACGCAUCACUGGUGUUCGGGUUGUCAUGCCAAUGGCACUGCCCGGUAGCUAAAUGCGGAAGAGAUAAGUGCUGAAAGCAUCUAAGCACGAAACUUGCCCCGAGAUGAGUUCUCCCUGACCCUUUAAGGGUCCUGAAGGAACGUUGAAGACGACGACGUUGAUAGGCCGGGUGUGUAAGCGCAGCGAUGCGUUGAGCUAACCGGUACUAAUGAACCGUGAGGCUUAACCU";
 
-
 fn main() {
-
     const N_STARTS: i64 = 5;
     const MAX_STEPS: i64 = 2_100;
     const WOBBLE_FREQUENCY: f64 = 0.0;
     const N_RUNS: usize = 3; // Overall times the script should run
-
 
     unsafe {
         let mut md: vrna_md_t = std::mem::zeroed();
@@ -41,15 +37,11 @@ fn main() {
     }
 
     //Imports file here -> Note that they have to be formatted with both Sequence and Structure. Files need to be named "input_*.txt"
-    
-    
 
     let input_dir = match fs::read_dir("misc") {
         Ok(entries) => entries,
-        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
-            fs::read_dir("../misc")
-                .expect("Could not find a misc directory at either ./misc or ../misc")
-        }
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => fs::read_dir("../misc")
+            .expect("Could not find a misc directory at either ./misc or ../misc"),
         Err(error) => {
             panic!("Failed to read ./misc: {error}");
         }
@@ -76,25 +68,19 @@ fn main() {
 
     // Base output directory: ../misc/output
     let output_base = Path::new("../misc").join("output");
-    fs::create_dir_all(&output_base)
-        .expect("failed to create ../misc/output directory");
+    fs::create_dir_all(&output_base).expect("failed to create ../misc/output directory");
 
     for run in 1..=N_RUNS {
-
         println!("\n########################################");
         println!("RUN {} of {}", run, N_RUNS);
         println!("########################################");
 
         // ../misc/output/run_N
         let run_dir = output_base.join(format!("run_{}", run));
-        fs::create_dir_all(&run_dir)
-            .expect("failed to create run directory");
+        fs::create_dir_all(&run_dir).expect("failed to create run directory");
 
         for input_path in &input_files {
-
-            let input_path_str = input_path
-                .to_str()
-                .expect("Invalid input file path");
+            let input_path_str = input_path.to_str().expect("Invalid input file path");
 
             println!("\n========================================");
             println!("PROCESSING: {}", input_path_str);
@@ -110,16 +96,14 @@ fn main() {
                 }
 
                 Err(e) => {
-                    eprintln!(
-                        "Failed to read {}: {}",
-                        input_path_str,
-                        e
-                    );
+                    eprintln!("Failed to read {}: {}", input_path_str, e);
                     continue;
                 }
             };
 
-            if RIBOSOMAL_RNA {println!("====RIBOSOMAL SEQUENCE USED====")};
+            if RIBOSOMAL_RNA {
+                println!("====RIBOSOMAL SEQUENCE USED====")
+            };
 
             let ribo_positions: Vec<usize> = if RIBOSOMAL_RNA {
                 seq.char_indices()
@@ -142,12 +126,9 @@ fn main() {
                     WOBBLE_FREQUENCY,
                     Some(&ribo_positions),
                 )
-            } else{
+            } else {
                 decomposed_hill_climb_design(
-                    &mutate_ks(
-                        &seq,
-                        &get_pair_map(&target_structure),
-                    ),
+                    &mutate_ks(&seq, &get_pair_map(&target_structure)),
                     &target_structure,
                     N_STARTS,
                     MAX_STEPS,
@@ -157,83 +138,82 @@ fn main() {
             };
 
             match result {
+                Ok(r) => {
+                    println!("\n==== FINAL (run {}) ====", run);
+                    println!("sequence     : {}", r.sequence);
+                    println!("target       : {}", target_structure);
+                    println!("mfe structure: {}", r.mfe_structure);
+                    println!("bp_distance  : {}", r.bp_distance);
+                    println!("mfe          : {:.2}", r.mfe);
+                    println!("slices       : {}", r.n_slices);
+                    println!("Ribosomal RNA used: {}", RIBOSOMAL_RNA);
 
-        Ok(r) => {
-            println!("\n==== FINAL (run {}) ====", run);
-            println!("sequence     : {}", r.sequence);
-            println!("target       : {}", target_structure);
-            println!("mfe structure: {}", r.mfe_structure);
-            println!("bp_distance  : {}", r.bp_distance);
-            println!("mfe          : {:.2}", r.mfe);
-            println!("slices       : {}", r.n_slices);
-            println!("Ribosomal RNA used: {}", RIBOSOMAL_RNA);
-            
-        if let Some(identity) = r.ribosome_identity {
-            let n_mismatched = r.ribosome_mismatches
-                .as_ref()
-                .map(|v| v.len())
-                .unwrap_or(0);
-            println!("ribosome identity  : {:.1}% ({} mismatched positions)", identity * 100.0, n_mismatched);
-            if let Some(mismatches) = &r.ribosome_mismatches {
-                if !mismatches.is_empty() {
-                    println!("ribosome mismatches: {:?}", mismatches);
+                    if let Some(identity) = r.ribosome_identity {
+                        let n_mismatched =
+                            r.ribosome_mismatches.as_ref().map(|v| v.len()).unwrap_or(0);
+                        println!(
+                            "ribosome identity  : {:.1}% ({} mismatched positions)",
+                            identity * 100.0,
+                            n_mismatched
+                        );
+                        if let Some(mismatches) = &r.ribosome_mismatches {
+                            if !mismatches.is_empty() {
+                                println!("ribosome mismatches: {:?}", mismatches);
+                            }
+                        }
+                    }
+
+                    // Get input filename
+                    let input_filename = input_path
+                        .file_stem()
+                        .and_then(|s| s.to_str())
+                        .unwrap_or("output");
+
+                    // e.g. input_1 -> output_1.txt
+                    let output_filename = input_filename
+                        .strip_prefix("input_")
+                        .map(|n| format!("output_{}.txt", n))
+                        .unwrap_or_else(|| "output.txt".to_string());
+
+                    // ../misc/output/run_N/output_1.txt
+                    let output_path = run_dir.join(&output_filename);
+
+                    let mut file =
+                        File::create(&output_path).expect("failed to create output file");
+
+                    writeln!(file, "==== FINAL (run {}) ====", run).unwrap();
+                    writeln!(file, "sequence      : {}", r.sequence).unwrap();
+                    writeln!(file, "target        : {}", target_structure).unwrap();
+                    writeln!(file, "mfe structure : {}", r.mfe_structure).unwrap();
+                    writeln!(file, "bp_distance   : {}", r.bp_distance).unwrap();
+                    writeln!(file, "mfe           : {:.2}", r.mfe).unwrap();
+                    writeln!(file, "slices        : {}", r.n_slices).unwrap();
+                    writeln!(file, "Ribosomal RNA used: {}", RIBOSOMAL_RNA).unwrap();
+
+                    if let Some(identity) = r.ribosome_identity {
+                        let n_mismatched =
+                            r.ribosome_mismatches.as_ref().map(|v| v.len()).unwrap_or(0);
+                        writeln!(
+                            file,
+                            "ribosome identity  : {:.1}% ({} mismatched positions)",
+                            identity * 100.0,
+                            n_mismatched
+                        )
+                        .unwrap();
+                        if let Some(mismatches) = &r.ribosome_mismatches {
+                            if !mismatches.is_empty() {
+                                writeln!(file, "ribosome mismatches: {:?}", mismatches).unwrap();
+                            }
+                        }
+                    }
+
+                    println!("\nOutput written to {}", output_path.display());
                 }
-            }
-        }
 
-        // Get input filename
-        let input_filename = input_path
-            .file_stem()
-            .and_then(|s| s.to_str())
-            .unwrap_or("output");
+                Err(e) => {
+                    eprintln!("Design failed for {} (run {}): {e}", input_path_str, run);
 
-        // e.g. input_1 -> output_1.txt
-        let output_filename = input_filename
-            .strip_prefix("input_")
-            .map(|n| format!("output_{}.txt", n))
-            .unwrap_or_else(|| "output.txt".to_string());
-
-        // ../misc/output/run_N/output_1.txt
-        let output_path = run_dir.join(&output_filename);
-
-        let mut file = File::create(&output_path)
-            .expect("failed to create output file");
-
-        writeln!(file, "==== FINAL (run {}) ====", run).unwrap();
-        writeln!(file, "sequence      : {}", r.sequence).unwrap();
-        writeln!(file, "target        : {}", target_structure).unwrap();
-        writeln!(file, "mfe structure : {}", r.mfe_structure).unwrap();
-        writeln!(file, "bp_distance   : {}", r.bp_distance).unwrap();
-        writeln!(file, "mfe           : {:.2}", r.mfe).unwrap();
-        writeln!(file, "slices        : {}", r.n_slices).unwrap();
-        writeln!(file, "Ribosomal RNA used: {}", RIBOSOMAL_RNA).unwrap();
-
-        if let Some(identity) = r.ribosome_identity {
-            let n_mismatched = r.ribosome_mismatches
-                .as_ref()
-                .map(|v| v.len())
-                .unwrap_or(0);
-            writeln!(file, "ribosome identity  : {:.1}% ({} mismatched positions)", identity * 100.0, n_mismatched).unwrap();
-            if let Some(mismatches) = &r.ribosome_mismatches {
-                if !mismatches.is_empty() {
-                    writeln!(file, "ribosome mismatches: {:?}", mismatches).unwrap();
-                }
-            }
-        }
-
-        println!(
-            "\nOutput written to {}",
-            output_path.display()
-        );
-    }
-
-    Err(e) => {
-        eprintln!(
-            "Design failed for {} (run {}): {e}",
-            input_path_str, run
-        );
-        
-        continue;
+                    continue;
                 }
             }
         }
@@ -259,7 +239,7 @@ fn get_pair_map(structure: &str) -> HashMap<usize, usize> {
                 pair_map.insert(i, j);
                 pair_map.insert(j, i);
             }
-            _ => {} 
+            _ => {}
         }
     }
 
@@ -273,19 +253,23 @@ fn pk_pair_mismatches(seq: &str, pair_map: &HashMap<usize, usize>, target: &str)
     let mut seen = HashSet::new();
 
     for (&i, &j) in pair_map.iter() {
-        if i >= j || seen.contains(&i) { continue; }
-        
-        if target_bytes[i] != b'[' && target_bytes[i] != b']' { continue; }
+        if i >= j || seen.contains(&i) {
+            continue;
+        }
+
+        if target_bytes[i] != b'[' && target_bytes[i] != b']' {
+            continue;
+        }
         seen.insert(i);
         seen.insert(j);
 
         let ok = matches!(
             (seq_bytes[i], seq_bytes[j]),
-            (b'A', b'U') | (b'U', b'A') |
-            (b'G', b'C') | (b'C', b'G') |
-            (b'G', b'U') | (b'U', b'G')
+            (b'A', b'U') | (b'U', b'A') | (b'G', b'C') | (b'C', b'G') | (b'G', b'U') | (b'U', b'G')
         );
-        if !ok { mismatches += 1; }
+        if !ok {
+            mismatches += 1;
+        }
     }
     mismatches
 }
@@ -304,8 +288,8 @@ fn mutate_seq(seq_in: &str, structure: &str, wobble_frequency: f64) -> String {
     let hard_loops: bool = find_hard_loops(structure);
 
     let _nucleotides = ['A', 'U', 'G', 'C'];
-    let paired_nucleotides = ['A', 'U', 'G', 'G', 'G', 'C','C', 'C', 'G', 'C'];
-    
+    let paired_nucleotides = ['A', 'U', 'G', 'G', 'G', 'C', 'C', 'C', 'G', 'C'];
+
     let purines = ['A', 'G'];
 
     let mut mut_seq: Vec<char> = seq_in.chars().collect();
@@ -315,69 +299,62 @@ fn mutate_seq(seq_in: &str, structure: &str, wobble_frequency: f64) -> String {
         if mut_seq[i] != 'N' && mut_seq[i] != 'K' && mut_seq[i] != 'S' {
             continue;
         }
-        
 
         if let Some(&j) = pair_map.get(&i) {
             if mut_seq[j] != 'N' {
                 mut_seq[i] = *comp_dict.get(&mut_seq[j]).unwrap();
-            } 
-            else if mut_seq[i] == 'K' {
+            } else if mut_seq[i] == 'K' {
                 let choice = if rng.random::<f64>() < 0.5 { 'G' } else { 'U' };
                 mut_seq[i] = choice;
 
-                
                 if rng.random::<f64>() < wobble_frequency && choice == 'G' {
                     mut_seq[j] = 'U';
                 } else {
                     mut_seq[j] = *comp_dict.get(&choice).unwrap();
                 }
-            } 
-            else if mut_seq[i] == 'S' {
+            } else if mut_seq[i] == 'S' {
                 let choice = if rng.random::<f64>() < 0.5 { 'G' } else { 'C' };
                 mut_seq[i] = choice;
                 mut_seq[j] = *comp_dict.get(&choice).unwrap();
-            }
-            else if hard_loops && mut_struct[i] == '(' && mut_struct[i+1] == ')'{
+            } else if hard_loops && mut_struct[i] == '(' && mut_struct[i + 1] == ')' {
                 let choice = if rng.random::<f64>() < 0.5 { 'G' } else { 'C' };
                 mut_seq[i] = choice;
                 mut_seq[i + 1] = *comp_dict.get(&choice).unwrap();
                 println!("HARD LOOP WARNING -> GC-PAIR!");
                 if i + 2 < j {
-                        if let Some(&partner_of_next) = pair_map.get(&(i + 2)) {
-                            if partner_of_next == j - 2
-                                && mut_seq[i + 1] == 'N'
-                                && mut_seq[j - 1] == 'N'
-                            {
-                                let choice2 = if rng.random::<f64>() < 0.5 { 'G' } else { 'C' };
-                                mut_seq[i + 2] = choice2;
-                                mut_seq[j - 2] = *comp_dict.get(&choice2).unwrap();
-                            }
-                        }
-                    }
-
-                    if i + 3 < j {
-                        if let Some(&partner_of_next) = pair_map.get(&(i + 3)) {
-                            if partner_of_next == j - 3
-                                && mut_seq[i + 2] == 'N'
-                                && mut_seq[j - 2] == 'N'
-                            {
-                                let choice3 = if rng.random::<f64>() < 0.5 { 'G' } else { 'U' };
-                                mut_seq[i + 3] = choice3;
-                                mut_seq[j - 3] = *comp_dict.get(&choice3).unwrap();
-                            }
+                    if let Some(&partner_of_next) = pair_map.get(&(i + 2)) {
+                        if partner_of_next == j - 2
+                            && mut_seq[i + 1] == 'N'
+                            && mut_seq[j - 1] == 'N'
+                        {
+                            let choice2 = if rng.random::<f64>() < 0.5 { 'G' } else { 'C' };
+                            mut_seq[i + 2] = choice2;
+                            mut_seq[j - 2] = *comp_dict.get(&choice2).unwrap();
                         }
                     }
                 }
-            else {
-                let near_loop = is_adjacent_to_loop(i, structure) || is_adjacent_to_loop(j, structure);
+
+                if i + 3 < j {
+                    if let Some(&partner_of_next) = pair_map.get(&(i + 3)) {
+                        if partner_of_next == j - 3
+                            && mut_seq[i + 2] == 'N'
+                            && mut_seq[j - 2] == 'N'
+                        {
+                            let choice3 = if rng.random::<f64>() < 0.5 { 'G' } else { 'U' };
+                            mut_seq[i + 3] = choice3;
+                            mut_seq[j - 3] = *comp_dict.get(&choice3).unwrap();
+                        }
+                    }
+                }
+            } else {
+                let near_loop =
+                    is_adjacent_to_loop(i, structure) || is_adjacent_to_loop(j, structure);
 
                 if near_loop {
-                   
                     let choice = if rng.random::<f64>() < 0.5 { 'G' } else { 'C' };
                     mut_seq[i] = choice;
                     mut_seq[j] = *comp_dict.get(&choice).unwrap();
 
-                    
                     if i + 1 < j {
                         if let Some(&partner_of_next) = pair_map.get(&(i + 1)) {
                             if partner_of_next == j - 1
@@ -402,31 +379,23 @@ fn mutate_seq(seq_in: &str, structure: &str, wobble_frequency: f64) -> String {
                             }
                         }
                     }
-
                 } else {
                     let choice = paired_nucleotides[rng.random_range(0..paired_nucleotides.len())];
                     mut_seq[i] = choice;
 
-                   
                     if rng.random::<f64>() < wobble_frequency && choice == 'G' {
                         mut_seq[j] = 'U';
                     } else {
                         mut_seq[j] = *comp_dict.get(&choice).unwrap();
                     }
                 }
-
             }
-        
         } else {
-            
             mut_seq[i] = purines[rng.random_range(0..purines.len())]; // Hopefully only mutates long unpaired stretches into A's and G's
         }
-        
     }
 
     mut_seq.into_iter().collect()
-
-    
 }
 
 struct RibosomeSimilarity {
@@ -452,8 +421,6 @@ pub struct Substructure {
     pub structure: String,
     pub designable: Vec<usize>,
 }
-
-
 
 pub struct FoldResult {
     pub bp_distance: i64,
@@ -493,19 +460,18 @@ pub fn bp_distance_to_target(seq: &str, target: &str) -> DesignResult {
     let n = seq.len();
     let target_no_pk = strip_pseudoknots(target);
 
-        unsafe {
+    unsafe {
         let mut md: vrna_md_t = std::mem::zeroed();
         vrna_md_set_default(&mut md);
         md.temperature = 37.0;
         md.dangles = 1;
 
-        
         let seq_bytes = seq.as_bytes();
         let target_bytes = target_no_pk.as_bytes();
         let mut fold_seq_bytes = seq.as_bytes().to_vec();
         for i in 0..n {
             if seq_bytes[i] != b'N' && target_bytes[i] == b'.' {
-                fold_seq_bytes[i] = b'N';  // Mask for folding only
+                fold_seq_bytes[i] = b'N'; // Mask for folding only
             }
         }
         let fold_seq = String::from_utf8(fold_seq_bytes).unwrap();
@@ -513,16 +479,13 @@ pub fn bp_distance_to_target(seq: &str, target: &str) -> DesignResult {
         let seq_c = CString::new(fold_seq).expect("seq has interior NUL");
         let fc = vrna_fold_compound(seq_c.as_ptr(), &md, VRNA_OPTION_MFE as u32);
 
-        
         let mut structure = vec![0i8; n + 1];
         let mfe = vrna_mfe(fc, structure.as_mut_ptr());
 
-       
         let structure_bytes: Vec<u8> = structure.iter().take(n).map(|&c| c as u8).collect();
         let structure_cstr = CString::new(structure_bytes).unwrap();
         let structure_str = structure_cstr.to_str().unwrap().to_string();
 
-        
         let target_c = CString::new(target_no_pk.clone()).unwrap();
         let distance = vrna_bp_distance(target_c.as_ptr(), structure_cstr.as_ptr());
 
@@ -532,7 +495,7 @@ pub fn bp_distance_to_target(seq: &str, target: &str) -> DesignResult {
             bp_distance: distance as i64,
             structure: structure_str,
             mfe: mfe as f64,
-            sequence: seq.to_string(),  // Return the REAL sequence, not the masked one
+            sequence: seq.to_string(), // Return the REAL sequence, not the masked one
         }
     }
 }
@@ -561,54 +524,67 @@ fn hill_climb_design(
 
     let dist_threshold: i64 = if RIBOSOMAL_RNA {
         ((n_fixed as f64) / 6.0).ceil() as i64
-    } else{
+    } else {
         ((n_fixed as f64) / 12.0).ceil() as i64
     };
 
     let hard_loops = find_hard_loops(&target_structure);
 
-    let dist_threshold = if hard_loops {dist_threshold.max(1) + 2} else {dist_threshold.max(1)};
-    
+    let dist_threshold = if hard_loops {
+        dist_threshold.max(1) + 2
+    } else {
+        dist_threshold.max(1)
+    };
 
     let p_threshold: f64 = if fixed_fraction > 0.6 {
-        0.70       
+        0.70
     } else if hard_loops {
         0.75
-        } 
-            else {
-                0.60       
-            };
-
-    
-
+    } else {
+        0.60
+    };
 
     println!(
         "  [hill_climb] slice_len={} designable={} fixed={} ({:.0}% fixed) → dist_threshold={}, p_threshold={:.2}",
-        slice_len, n_designable, n_fixed, fixed_fraction * 100.0,
-        dist_threshold, p_threshold,
+        slice_len,
+        n_designable,
+        n_fixed,
+        fixed_fraction * 100.0,
+        dist_threshold,
+        p_threshold,
     );
 
     let nucleotides = vec!['A', 'U', 'G', 'C'];
     let pair_options: Vec<(char, char)> = vec![
-        ('A', 'U'), ('U', 'A'), ('G', 'C'), ('C', 'G'),
-        ('G', 'U'), ('U', 'G'),
+        ('A', 'U'),
+        ('U', 'A'),
+        ('G', 'C'),
+        ('C', 'G'),
+        ('G', 'U'),
+        ('U', 'G'),
     ];
     let seq_in_chars: Vec<char> = seq_in.chars().collect();
     let comp_dict = HashMap::from([('A', 'U'), ('U', 'A'), ('G', 'C'), ('C', 'G')]);
 
-
-    let mut current = if RIBOSOMAL_RNA {mutate_ribosome(seq_in, target_structure, &n_positions)} else {mutate_seq(seq_in, target_structure, wobble_frequency)};
+    let mut current = if RIBOSOMAL_RNA {
+        mutate_ribosome(seq_in, target_structure, &n_positions)
+    } else {
+        mutate_seq(seq_in, target_structure, wobble_frequency)
+    };
 
     //let mut current = mutate_seq(seq_in, target_structure, wobble_frequency);
 
-   
     let mut current_chars: Vec<char> = current.chars().collect();
 
-   
-    let mut stem_pairs: Vec<(usize, usize)> = n_positions.iter()
+    let mut stem_pairs: Vec<(usize, usize)> = n_positions
+        .iter()
         .filter_map(|&pos| {
             pair_map.get(&pos).map(|&partner| {
-                if pos < partner { (pos, partner) } else { (partner, pos) }
+                if pos < partner {
+                    (pos, partner)
+                } else {
+                    (partner, pos)
+                }
             })
         })
         .collect();
@@ -645,12 +621,13 @@ fn hill_climb_design(
         if is_weak {
             current_chars[pos] = 'G';
             current_chars[partner] = 'C';
-            println!("  Option B: forcing GC at ({}, {}) — outer pair {}{} is weak",
-                pos, partner, outer_5_nuc, outer_3_nuc);
+            println!(
+                "  Option B: forcing GC at ({}, {}) — outer pair {}{} is weak",
+                pos, partner, outer_5_nuc, outer_3_nuc
+            );
         }
     }
     current = current_chars.into_iter().collect();
-    
 
     let init_result = bp_distance_to_target(&current, target_structure);
     let mut current_dist = init_result.bp_distance;
@@ -670,8 +647,6 @@ fn hill_climb_design(
     let mut rng = rand::rng();
     let mut last_improvement_step: i64 = 0;
 
-
-
     // ################## Temporarily --> This is purely for testing
     let mut n_iterations_for_testing: Vec<i64> = vec![0];
     let mut temperature_for_testing: Vec<f64> = vec![temp];
@@ -683,29 +658,22 @@ fn hill_climb_design(
         if best_candidates[0].0 == 0 && best_candidates.len() >= n_keep {
             break;
         }
-        
 
-        
         if step - last_improvement_step > reheat_after {
             temp = reheat_temp;
             last_improvement_step = step;
             println!("step {step}: REHEATING to temp={temp:.2}");
         }
 
-        
         let mismatched =
             find_mismatched_positions(&current_structure, target_structure, &n_positions);
 
-        
-
-
-            // === THIS IS JUST A TEST CODE. IF THIS NOT WORK GO BACK TO THE OLD WAY =======
-            if current_dist > 0 && mismatched.is_empty() && step > 20 {
-            
+        // === THIS IS JUST A TEST CODE. IF THIS NOT WORK GO BACK TO THE OLD WAY =======
+        if current_dist > 0 && mismatched.is_empty() && step > 20 {
             let target_no_pk = strip_pseudoknots(target_structure);
             let target_bytes = target_no_pk.as_bytes();
             let current_bytes = current_structure.as_bytes();
-            
+
             // Indices of *all* mismatches in this slice (local coords)
             let mut all_mismatches = Vec::new();
             for i in 0..current_bytes.len() {
@@ -713,54 +681,50 @@ fn hill_climb_design(
                     all_mismatches.push(i);
                 }
             }
-            
+
             // Fixed mismatched positions = mismatches not in n_positions
             use std::collections::HashSet;
             let designable_set: HashSet<usize> = n_positions.iter().copied().collect();
             let fixed_mismatches: Vec<usize> = all_mismatches
-            .into_iter()
-            .filter(|i| !designable_set.contains(i))
-            .collect();
-        
-        if !fixed_mismatches.is_empty() {
-            
-            let (_cost, defects, _mfe, _e_target) =
-            compute_pf_defect(&current, target_structure);
-            
-            
-            let mut max_p_paired = 0.0;
-            for &i in &fixed_mismatches {
-                let p_paired = 1.0 - defects[i];
-                if p_paired > max_p_paired {
-                    max_p_paired = p_paired;
+                .into_iter()
+                .filter(|i| !designable_set.contains(i))
+                .collect();
+
+            if !fixed_mismatches.is_empty() {
+                let (_cost, defects, _mfe, _e_target) =
+                    compute_pf_defect(&current, target_structure);
+
+                let mut max_p_paired = 0.0;
+                for &i in &fixed_mismatches {
+                    let p_paired = 1.0 - defects[i];
+                    if p_paired > max_p_paired {
+                        max_p_paired = p_paired;
+                    }
                 }
-            }
-            
-            //let p_threshold = 0.55;      
-            //let dist_threshold = 3;      
-            
-            if current_dist <= dist_threshold && max_p_paired < p_threshold {
-                println!(
-                    "  early exit: dist={} but remaining mismatches are weakly paired (max p≈{:.2})",
-                    current_dist, max_p_paired
-                );
-                break;
+
+                //let p_threshold = 0.55;
+                //let dist_threshold = 3;
+
+                if current_dist <= dist_threshold && max_p_paired < p_threshold {
+                    println!(
+                        "  early exit: dist={} but remaining mismatches are weakly paired (max p≈{:.2})",
+                        current_dist, max_p_paired
+                    );
+                    break;
+                }
+
+                if current_dist <= dist_threshold && if_slices {
+                    break;
+                };
             }
 
-            if current_dist <= dist_threshold && if_slices{
-                break
-            };
-            
+            println!(
+                "  early exit: all mismatches at fixed positions, dist={current_dist} (no PF exception)"
+            );
+            break;
         }
+        // ========= END OF TEST BLOCK ================
 
-    
-    println!(
-        "  early exit: all mismatches at fixed positions, dist={current_dist} (no PF exception)"
-    );
-    break;
-}
-// ========= END OF TEST BLOCK ================
-        
         let stuck = step - last_improvement_step > 100;
         let use_double = stuck && current_dist <= 2;
 
@@ -769,26 +733,25 @@ fn hill_climb_design(
         let target_bytes = target_structure.as_bytes();
         let stuck_positions: Vec<usize> = n_positions
             .iter()
-            .filter(|&&p| p < current_structure.len()
-            && current_structure.as_bytes()[p] != target_bytes[p])
+            .filter(|&&p| {
+                p < current_structure.len() && current_structure.as_bytes()[p] != target_bytes[p]
+            })
             .copied()
             .collect();
 
         if use_double {
-            
             let mut search_positions: Vec<usize> = if stuck_positions.len() >= 2 {
                 stuck_positions.clone()
             } else {
                 n_positions.clone()
             };
-            
+
             if search_positions.len() > 30 {
                 use rand::seq::SliceRandom;
                 search_positions.shuffle(&mut rng);
                 search_positions.truncate(30);
             }
-            
-            
+
             let mut best_trial = candidate.clone();
             let mut best_cost = f64::MAX;
 
@@ -836,9 +799,10 @@ fn hill_climb_design(
 
                             let trial_str: String = trial.iter().collect();
                             let trial_result = bp_distance_to_target(&trial_str, target_structure);
-                            let pk_mismatches = pk_pair_mismatches(&trial_str, &pair_map, target_structure);
-                            let trial_cost = trial_result.bp_distance as f64 + 2.0 * pk_mismatches as f64;
-
+                            let pk_mismatches =
+                                pk_pair_mismatches(&trial_str, &pair_map, target_structure);
+                            let trial_cost =
+                                trial_result.bp_distance as f64 + 2.0 * pk_mismatches as f64;
 
                             if trial_cost < best_cost {
                                 best_cost = trial_cost;
@@ -869,9 +833,11 @@ fn hill_climb_design(
                         trial[i] = nuc;
                         let trial_str: String = trial.iter().collect();
                         let trial_result = bp_distance_to_target(&trial_str, target_structure);
-                        let pk_mismatches = pk_pair_mismatches(&trial_str, &pair_map, target_structure);
-                        let trial_cost = trial_result.bp_distance as f64 + 2.0 * pk_mismatches as f64;
-                        
+                        let pk_mismatches =
+                            pk_pair_mismatches(&trial_str, &pair_map, target_structure);
+                        let trial_cost =
+                            trial_result.bp_distance as f64 + 2.0 * pk_mismatches as f64;
+
                         if trial_cost < best_cost {
                             best_cost = trial_cost;
                             best_nuc = nuc;
@@ -893,9 +859,11 @@ fn hill_climb_design(
                         trial[j] = nj;
                         let trial_str: String = trial.iter().collect();
                         let trial_result = bp_distance_to_target(&trial_str, target_structure);
-                        let pk_mismatches = pk_pair_mismatches(&trial_str, &pair_map, target_structure);
-                        let trial_cost = trial_result.bp_distance as f64 + 2.0 * pk_mismatches as f64;
-                        
+                        let pk_mismatches =
+                            pk_pair_mismatches(&trial_str, &pair_map, target_structure);
+                        let trial_cost =
+                            trial_result.bp_distance as f64 + 2.0 * pk_mismatches as f64;
+
                         if trial_cost < best_cost {
                             best_cost = trial_cost;
                             best_pair = (ni, nj);
@@ -921,7 +889,7 @@ fn hill_climb_design(
                     let trial_result = bp_distance_to_target(&trial_str, target_structure);
                     let pk_mismatches = pk_pair_mismatches(&trial_str, &pair_map, target_structure);
                     let trial_cost = trial_result.bp_distance as f64 + 2.0 * pk_mismatches as f64;
-                    
+
                     if trial_cost < best_cost {
                         best_cost = trial_cost;
                         best_nuc = nuc;
@@ -941,11 +909,10 @@ fn hill_climb_design(
         let guard_result = bp_distance_to_target(&candidate_string, target_structure);
         let cand_pk_mismatches = pk_pair_mismatches(&candidate_string, &pair_map, target_structure);
         let cand_dist = guard_result.bp_distance + 2 * cand_pk_mismatches as i64;
-        let cand_energy_gap =
-            (energy_of_target_structure(&candidate_string, target_structure) - guard_result.mfe)
-                .max(0.0);
+        let cand_energy_gap = (energy_of_target_structure(&candidate_string, target_structure)
+            - guard_result.mfe)
+            .max(0.0);
 
-        
         let accept = if cand_dist < current_dist {
             true
         } else if cand_dist == current_dist {
@@ -953,36 +920,31 @@ fn hill_climb_design(
                 || rng.random::<f64>()
                     < (-(cand_energy_gap - current_energy_gap) / temp.max(1e-6)).exp()
         } else {
-            rng.random::<f64>()
-                < (-(cand_dist - current_dist) as f64 / temp.max(1e-6)).exp()
+            rng.random::<f64>() < (-(cand_dist - current_dist) as f64 / temp.max(1e-6)).exp()
         };
 
         n_iterations_for_testing.push(step);
         temperature_for_testing.push(temp);
         current_dist_for_testing.push(current_dist);
-        
-        
+
         let current_bytes = current_structure.as_bytes();
         let mut all_mismatches = Vec::new();
-            for i in 0..current_bytes.len() {
-                if current_bytes[i] != target_bytes[i] {
-                    all_mismatches.push(i);
-                }
+        for i in 0..current_bytes.len() {
+            if current_bytes[i] != target_bytes[i] {
+                all_mismatches.push(i);
             }
-        
+        }
+
         use std::collections::HashSet;
-            let designable_set: HashSet<usize> = n_positions.iter().copied().collect();
-            let fixed_mismatches: Vec<usize> = all_mismatches
+        let designable_set: HashSet<usize> = n_positions.iter().copied().collect();
+        let fixed_mismatches: Vec<usize> = all_mismatches
             .into_iter()
             .filter(|i| !designable_set.contains(i))
             .collect();
-        
+
         if !fixed_mismatches.is_empty() {
-            
-            let (_cost, defects, _mfe, _e_target) =
-            compute_pf_defect(&current, target_structure);
-            
-            
+            let (_cost, defects, _mfe, _e_target) = compute_pf_defect(&current, target_structure);
+
             let mut max_p_paired = 0.0;
             for &i in &fixed_mismatches {
                 let p_paired = 1.0 - defects[i];
@@ -990,47 +952,46 @@ fn hill_climb_design(
                     max_p_paired = p_paired;
                 }
             }
-            
-            //let p_threshold = 0.55;      
-            //let dist_threshold = 3;      
-            
+
+            //let p_threshold = 0.55;
+            //let dist_threshold = 3;
+
             if cand_dist <= dist_threshold && max_p_paired < p_threshold {
                 println!(
                     "  early exit: dist={} but remaining mismatches are weakly paired (max p≈{:.2})",
                     cand_dist, max_p_paired
                 );
                 break;
-            }}
+            }
+        }
 
-        
-        if cand_dist <= dist_threshold && if_slices{
-            println!("Early exit for slices at dist={}: Remaining positions will be solved globally",cand_dist);
-                break
-            };
-            
+        if cand_dist <= dist_threshold && if_slices {
+            println!(
+                "Early exit for slices at dist={}: Remaining positions will be solved globally",
+                cand_dist
+            );
+            break;
+        };
 
         // End of break block
 
-        
         if accept {
             let improved = cand_dist < current_dist;
             current = candidate_string.clone();
             current_dist = cand_dist;
-            
-            
-            current_energy_gap =
-            (energy_of_target_structure(&candidate_string, target_structure) - guard_result.mfe)
-            .max(0.0);
-        
+
+            current_energy_gap = (energy_of_target_structure(&candidate_string, target_structure)
+                - guard_result.mfe)
+                .max(0.0);
+
             current_structure = guard_result.structure.clone();
             current_mfe = guard_result.mfe;
-        
+
             if improved {
                 last_improvement_step = step;
             }
 
-            let existing_seqs: HashSet<&String> =
-                best_candidates.iter().map(|c| &c.1).collect();
+            let existing_seqs: HashSet<&String> = best_candidates.iter().map(|c| &c.1).collect();
             if !existing_seqs.contains(&candidate_string) {
                 best_candidates.push((
                     current_dist,
@@ -1053,15 +1014,7 @@ fn hill_climb_design(
                 if use_double { "DOUBLE" } else { "single" }
             );
         }
-
-
-        
     }
-
-    
-
-
-    
 
     best_candidates
         .into_iter()
@@ -1081,7 +1034,7 @@ fn multi_start_hill_climb_design(
     n_runs: i64,
     max_steps: i64,
     wobble_frequency: f64,
-    if_slices : bool,
+    if_slices: bool,
 ) -> Vec<DesignResult> {
     let mut all_candidates: Vec<DesignResult> = Vec::new();
     let n_keep_per_run: usize = 1;
@@ -1091,7 +1044,7 @@ fn multi_start_hill_climb_design(
     //let cooling_rate: f64 = 0.999; // <-- optional override for testing
     let reheat_after: i64 = 500; // number of stagnant steps before reheating
     let reheat_temp: f64 = 1.0; // temperature to jump back
-    
+
     let all_pools: Vec<Vec<DesignResult>> = (0..n_runs)
         .into_par_iter()
         .map(|_run| {
@@ -1117,22 +1070,19 @@ fn multi_start_hill_climb_design(
 
     let _n_keep_global: usize = 20;
     all_candidates.sort_by(|a, b| {
-    a.bp_distance
-        .cmp(&b.bp_distance)
-        .then_with(|| {
-            a.mfe.partial_cmp(&b.mfe).unwrap_or(std::cmp::Ordering::Equal)
+        a.bp_distance.cmp(&b.bp_distance).then_with(|| {
+            a.mfe
+                .partial_cmp(&b.mfe)
+                .unwrap_or(std::cmp::Ordering::Equal)
         })
     });
     all_candidates
 }
 
-
-
-
 fn get_pk_pairs(structure: &str) -> Vec<(usize, usize)> {
     let pair_map = get_pair_map(structure);
     let b = structure.as_bytes();
-    let mut pk_pairs = Vec::new();   
+    let mut pk_pairs = Vec::new();
     let mut seen = HashSet::new();
     for (&i, &j) in pair_map.iter() {
         if i >= j || seen.contains(&i) {
@@ -1141,15 +1091,11 @@ fn get_pk_pairs(structure: &str) -> Vec<(usize, usize)> {
         if b[i] == b'[' || b[i] == b']' {
             seen.insert(i);
             seen.insert(j);
-            pk_pairs.push((i.min(j), i.max(j)));   
+            pk_pairs.push((i.min(j), i.max(j)));
         }
     }
-    pk_pairs   
+    pk_pairs
 }
-
-
-
-
 
 pub fn decomposed_hill_climb_design(
     start_seq: &str,
@@ -1159,70 +1105,86 @@ pub fn decomposed_hill_climb_design(
     wobble_frequency: f64,
     ribo_positions: Option<&[usize]>,
 ) -> Result<GlobalDesignResult, String> {
-    assert_eq!(start_seq.len(), target.len(),
-        "start_seq and target must have equal length");
+    assert_eq!(
+        start_seq.len(),
+        target.len(),
+        "start_seq and target must have equal length"
+    );
 
     let ribo_set: HashSet<usize> = ribo_positions
         .map(|p| p.iter().copied().collect())
         .unwrap_or_default();
     if RIBOSOMAL_RNA {
-        println!("Restricting mutations to {} ribosomal-inserted positions", ribo_set.len());
+        println!(
+            "Restricting mutations to {} ribosomal-inserted positions",
+            ribo_set.len()
+        );
     }
-    
 
     let conserved_motifs = important_motifs();
-    let conserved_motifs = find_conserved_positions(
-        &start_seq, &conserved_motifs 
-    );
+    let conserved_motifs = find_conserved_positions(&start_seq, &conserved_motifs);
 
     let if_slices: bool = true;
     let slices = decompose(target).map_err(|e| e.to_string())?;
 
-    
-    
-
     let mut seq = start_seq.as_bytes().to_vec();
     if RIBOSOMAL_RNA {
-    let mut rng = rand::rng();
-    let nucleotides = ['A', 'U', 'G', 'C'];
-    for pos in 0..seq.len() {
-        if !ribo_set.contains(&pos) && matches!(seq[pos], b'N' | b'K' | b'S') {
-            seq[pos] = match seq[pos] {
-                b'K' => if rng.random::<f64>() < 0.5 { b'G' } else { b'U' },
-                b'S' => if rng.random::<f64>() < 0.5 { b'G' } else { b'C' },
-                _ => nucleotides[rng.random_range(0..4)] as u8,
+        let mut rng = rand::rng();
+        let nucleotides = ['A', 'U', 'G', 'C'];
+        for pos in 0..seq.len() {
+            if !ribo_set.contains(&pos) && matches!(seq[pos], b'N' | b'K' | b'S') {
+                seq[pos] = match seq[pos] {
+                    b'K' => {
+                        if rng.random::<f64>() < 0.5 {
+                            b'G'
+                        } else {
+                            b'U'
+                        }
+                    }
+                    b'S' => {
+                        if rng.random::<f64>() < 0.5 {
+                            b'G'
+                        } else {
+                            b'C'
+                        }
+                    }
+                    _ => nucleotides[rng.random_range(0..4)] as u8,
                 };
             }
         }
     }
 
-    println!("decomposed {} slices (post-order: children before parents)", slices.len());
-    
+    println!(
+        "decomposed {} slices (post-order: children before parents)",
+        slices.len()
+    );
+
     for (idx, sub) in slices.iter().enumerate() {
         let local_len = sub.end - sub.start;
-        let local_protected_positions = get_local_protected_positions(&conserved_motifs, sub.start, sub.end);
+        let local_protected_positions =
+            get_local_protected_positions(&conserved_motifs, sub.start, sub.end);
         let local_designable: Vec<usize> = if RIBOSOMAL_RNA {
-            sub
-                .designable
+            sub.designable
                 .iter()
                 .filter(|&&g| ribo_set.contains(&g))
                 .map(|&g| g - sub.start)
                 .filter(|local_pos| !local_protected_positions.contains(local_pos))
                 .collect()
         } else {
-            sub
-                .designable
+            sub.designable
                 .iter()
                 .filter(|&&g| matches!(start_seq.as_bytes()[g], b'N' | b'K' | b'S'))
                 .map(|&g| g - sub.start)
                 .collect()
         };
-        
 
         if local_designable.is_empty() {
             println!(
                 "[slice {}/{}] range=[{}, {}] — no designable positions, skipping",
-                idx + 1, slices.len(), sub.start, sub.end
+                idx + 1,
+                slices.len(),
+                sub.start,
+                sub.end
             );
             continue;
         }
@@ -1235,8 +1197,14 @@ pub fn decomposed_hill_climb_design(
 
         println!(
             "[slice {}/{}] range=[{}, {}] len={} designable={:?} (local={:?})",
-            idx + 1, slices.len(), sub.start, sub.end, local_len,
-            sub.designable, local_designable,);
+            idx + 1,
+            slices.len(),
+            sub.start,
+            sub.end,
+            local_len,
+            sub.designable,
+            local_designable,
+        );
         println!("  target:  {}", sub.structure);
         println!("  input:   {}", slice_start);
 
@@ -1258,18 +1226,16 @@ pub fn decomposed_hill_climb_design(
             .min_by_key(|r| r.bp_distance)
             .ok_or_else(|| format!("slice {} returned empty pool", idx))?;
 
-       
         let fixed_fraction = 1.0 - (n_designable as f64 / n_total as f64);
 
         if best.bp_distance > 0 && fixed_fraction > 0.5 {
             println!(
                 "  NOTE: slice {} best dist={} ({}% fixed), proceeding to next slice",
-                idx + 1, best.bp_distance, (fixed_fraction * 100.0) as u32
+                idx + 1,
+                best.bp_distance,
+                (fixed_fraction * 100.0) as u32
             );
-
-            
         }
-        
 
         println!(
             "  best:    bp_distance={}, mfe={:.2}",
@@ -1283,45 +1249,44 @@ pub fn decomposed_hill_climb_design(
         if designed_bytes.len() != local_len {
             return Err(format!(
                 "slice {} returned sequence of length {}, expected {}",
-                idx, designed_bytes.len(), local_len,
+                idx,
+                designed_bytes.len(),
+                local_len,
             ));
         }
 
         seq[sub.start..sub.end].copy_from_slice(designed_bytes);
-
-        
     }
-
-    
-
 
     let mut rng = rand::rng();
     let nucleotides = ['A', 'U', 'G', 'C'];
     let mut full_seq_chars: Vec<char> = String::from_utf8(seq.clone()).unwrap().chars().collect();
-    
+
     for c in full_seq_chars.iter_mut() {
         if *c == 'N' {
             *c = nucleotides[rng.random_range(0..nucleotides.len())];
-            
         }
         if *c == 'K' {
             *c = if rng.random::<f64>() < 0.5 { 'G' } else { 'U' };
-            
         }
         if *c == 'S' {
             *c = if rng.random::<f64>() < 0.5 { 'G' } else { 'C' };
-            
         }
     }
-    
-        
-    
+
     let pk_pairs = get_pk_pairs(target);
     if !pk_pairs.is_empty() {
-        let valid_pairs = [('A','U'), ('U','A'), ('G','C'), ('C','G'), ('G','U'), ('U','G')];
+        let valid_pairs = [
+            ('A', 'U'),
+            ('U', 'A'),
+            ('G', 'C'),
+            ('C', 'G'),
+            ('G', 'U'),
+            ('U', 'G'),
+        ];
         let mut n_pk_fixed = 0;
         for &(i, j) in &pk_pairs {
-            if RIBOSOMAL_RNA && !ribo_set.contains(&i) && !ribo_set.contains(&j){
+            if RIBOSOMAL_RNA && !ribo_set.contains(&i) && !ribo_set.contains(&j) {
                 continue;
             }
 
@@ -1338,15 +1303,11 @@ pub fn decomposed_hill_climb_design(
         }
     }
 
-    let full_seq = full_seq_chars.into_iter().collect::<String>();   
+    let full_seq = full_seq_chars.into_iter().collect::<String>();
 
-
-        
     println!("Proceeding to global check");
     let pre_repair_result = bp_distance_to_target(&full_seq, target);
 
-   
-    
     let full_seq = if pre_repair_result.bp_distance > 0 {
         let mismatched_positions: Vec<usize> = if RIBOSOMAL_RNA {
             identify_mismatches(&pre_repair_result.structure, target)
@@ -1358,18 +1319,22 @@ pub fn decomposed_hill_climb_design(
         };
         println!(
             "attempting global repair via multi_start_hill_climb_design, bp_distance={}, {} mismatched positions",
-            pre_repair_result.bp_distance, mismatched_positions.len()
+            pre_repair_result.bp_distance,
+            mismatched_positions.len()
         );
 
-        let repair_max_steps: i64 = if ((pre_repair_result.bp_distance as f64 / 0.008).round() as i64) < 800 {
-            (pre_repair_result.bp_distance as f64 / 0.008).round() as i64 
-        }
-            else{
+        let repair_max_steps: i64 =
+            if ((pre_repair_result.bp_distance as f64 / 0.008).round() as i64) < 800 {
+                (pre_repair_result.bp_distance as f64 / 0.008).round() as i64
+            } else {
                 800
             };
-        println!("Max number of iterations for global repair: {}",repair_max_steps);
+        println!(
+            "Max number of iterations for global repair: {}",
+            repair_max_steps
+        );
 
-        let if_slices : bool = false;
+        let if_slices: bool = false;
 
         let repair_pool = multi_start_hill_climb_design(
             &full_seq,
@@ -1398,13 +1363,9 @@ pub fn decomposed_hill_climb_design(
         full_seq
     };
 
-    
-
     let result = bp_distance_to_target(&full_seq, target);
 
-
-    let (mfe_struct_with_pk, n_pk_reinserted) =
-    annotate_pk(&full_seq, target, &result.structure);
+    let (mfe_struct_with_pk, n_pk_reinserted) = annotate_pk(&full_seq, target, &result.structure);
 
     let result_no_pk = bp_distance_to_target(&full_seq, target);
     let pair_map = get_pair_map(target);
@@ -1421,15 +1382,13 @@ pub fn decomposed_hill_climb_design(
     println!("bp_distance (pk-aware):   {}", result.bp_distance);
     println!("mfe (VRNA, no pk energy): {:.2}", result.mfe);
 
-
     let pk_predictions = fold_with_pkplex(&full_seq);
     if !pk_predictions.is_empty() {
         println!("---- pkplex verification ----");
         for (k, pk) in pk_predictions.iter().enumerate() {
             println!(
                 "  pk {}: dGpk={:.2}, dG1={:.2}, dG2={:.2}, dGint={:.2}, range 5'=[{},{}], 3'=[{},{}]",
-                k, pk.dgpk, pk.dg1, pk.dg2, pk.dgint,
-                pk.start_5, pk.end_5, pk.start_3, pk.end_3
+                k, pk.dgpk, pk.dg1, pk.dg2, pk.dgint, pk.start_5, pk.end_5, pk.start_3, pk.end_3
             );
         }
     } else {
@@ -1437,30 +1396,29 @@ pub fn decomposed_hill_climb_design(
     }
 
     let (ribosome_identity, ribosome_mismatches) = if RIBOSOMAL_RNA {
-    let ribo_positions_vec: Vec<usize> = ribo_positions.unwrap_or(&[]).to_vec();
-    let sim = ribosome_similarity(&full_seq, &ribo_positions_vec);
-    println!(
-        "ribosome identity: {}/{} ({:.1}%)",
-        sim.matches, sim.total, sim.identity * 100.0
-    );
-    (Some(sim.identity), Some(sim.mismatched_positions))
-        } else {
-            (None, None)
-        };
+        let ribo_positions_vec: Vec<usize> = ribo_positions.unwrap_or(&[]).to_vec();
+        let sim = ribosome_similarity(&full_seq, &ribo_positions_vec);
+        println!(
+            "ribosome identity: {}/{} ({:.1}%)",
+            sim.matches,
+            sim.total,
+            sim.identity * 100.0
+        );
+        (Some(sim.identity), Some(sim.mismatched_positions))
+    } else {
+        (None, None)
+    };
 
-        Ok(GlobalDesignResult {
-            sequence: full_seq,
-            mfe_structure: mfe_struct_with_pk,
-            bp_distance: result.bp_distance,
-            mfe: result.mfe,
-            n_slices: slices.len(),
-            ribosome_identity,
-            ribosome_mismatches,
-        })
-    }
-
-
-
+    Ok(GlobalDesignResult {
+        sequence: full_seq,
+        mfe_structure: mfe_struct_with_pk,
+        bp_distance: result.bp_distance,
+        mfe: result.mfe,
+        n_slices: slices.len(),
+        ribosome_identity,
+        ribosome_mismatches,
+    })
+}
 
 fn compute_partners(structure: &str) -> Option<Vec<Option<usize>>> {
     let b = structure.as_bytes();
@@ -1492,10 +1450,7 @@ fn compute_partners(structure: &str) -> Option<Vec<Option<usize>>> {
     } else {
         None
     }
-
-    
 }
-
 
 fn find_blocks(partner: &[Option<usize>], b: &[u8]) -> Vec<(usize, usize)> {
     let n = partner.len();
@@ -1505,7 +1460,6 @@ fn find_blocks(partner: &[Option<usize>], b: &[u8]) -> Vec<(usize, usize)> {
         let mut reach = i;
         let mut k = i;
         loop {
-            
             if b[k] != b'[' && b[k] != b']' {
                 if let Some(p) = partner[k] {
                     if p > reach {
@@ -1524,8 +1478,7 @@ fn find_blocks(partner: &[Option<usize>], b: &[u8]) -> Vec<(usize, usize)> {
     blocks
 }
 
-
-pub fn decompose(structure: &str) -> Result<Vec<Substructure>, &'static str> { 
+pub fn decompose(structure: &str) -> Result<Vec<Substructure>, &'static str> {
     let partner = compute_partners(structure).ok_or("unbalanced or unsupported structure")?;
     let b = structure.as_bytes();
     let mut out = Vec::new();
@@ -1535,10 +1488,8 @@ pub fn decompose(structure: &str) -> Result<Vec<Substructure>, &'static str> {
             continue; // single unpaired position
         }
         if b[start] == b'(' && partner[start] == Some(reach) {
-            
-            process_stem_loop(b, &partner, start, reach, &mut out); 
+            process_stem_loop(b, &partner, start, reach, &mut out);
         } else {
-            
             let designable: Vec<usize> = (start..=reach).collect();
             out.push(Substructure {
                 start,
@@ -1549,20 +1500,17 @@ pub fn decompose(structure: &str) -> Result<Vec<Substructure>, &'static str> {
         }
     }
 
-    
     for sub in out.iter_mut() {
         sub.structure = strip_pseudoknots(&sub.structure);
     }
 
     assert_slices_balanced(&out).map_err(|e| {
-    
-    eprintln!("{e}");
-    "unbalanced slice produced by decompose"
-})?;
+        eprintln!("{e}");
+        "unbalanced slice produced by decompose"
+    })?;
 
     Ok(out)
 }
-
 
 pub fn decompose_4(structure: &str) -> Result<Vec<Substructure>, &'static str> {
     let partner = compute_partners(structure).ok_or("unbalanced or unsupported structure")?;
@@ -1574,10 +1522,8 @@ pub fn decompose_4(structure: &str) -> Result<Vec<Substructure>, &'static str> {
             continue; // single unpaired position, nothing to do
         }
         if (b[start] == b'(' || b[start] == b'[') && partner[start] == Some(reach) {
-            
             process_stem_loop(b, &partner, start, reach, &mut out);
         } else {
-            
             let designable: Vec<usize> = (start..=reach).collect();
             out.push(Substructure {
                 start,
@@ -1611,7 +1557,7 @@ pub fn decompose3(structure: &str) -> Result<Vec<Substructure>, &'static str> {
 
 pub fn decompose2(structure: &str) -> Result<Vec<Substructure>, &'static str> {
     let n = structure.len();
-    
+
     compute_partners(structure).ok_or("unbalanced or unsupported structure")?;
 
     Ok(vec![Substructure {
@@ -1629,7 +1575,6 @@ fn _process_stem_loop(
     j: usize,
     out: &mut Vec<Substructure>,
 ) {
-    
     let mut i_inner = i;
     let mut j_inner = j;
     while i_inner + 1 < j_inner
@@ -1658,7 +1603,6 @@ fn _process_stem_loop(
                 k = l + 1;
             }
             b'[' => {
-                
                 if let Some(l) = partner[k] {
                     let lo = k.min(l);
                     let hi = k.max(l);
@@ -1671,12 +1615,11 @@ fn _process_stem_loop(
                     });
                     k = hi + 1;
                 } else {
-                    
                     designable.push(k);
                     k += 1;
                 }
             }
-            
+
             b')' => {
                 designable.push(k);
                 k += 1;
@@ -1696,15 +1639,13 @@ fn _process_stem_loop(
     });
 }
 
-
 fn process_stem_loop(
     b: &[u8],
     partner: &[Option<usize>],
-    i: usize,   
-    j: usize,   
+    i: usize,
+    j: usize,
     out: &mut Vec<Substructure>,
 ) {
-    
     let mut i_inner = i;
     let mut j_inner = j;
     while i_inner + 1 < j_inner && partner[i_inner + 1] == Some(j_inner - 1) {
@@ -1714,24 +1655,22 @@ fn process_stem_loop(
 
     let mut designable = Vec::new();
 
-    
     for k in i..=i_inner {
         designable.push(k);
     }
-    
+
     for k in j_inner..=j {
         designable.push(k);
     }
 
-    
     let mut k = i_inner + 1;
     while k < j_inner {
         if b[k] == b'(' {
             let l = partner[k].unwrap();
-            process_stem_loop(b, partner, k, l, out);  
+            process_stem_loop(b, partner, k, l, out);
             k = l + 1;
         } else {
-            designable.push(k);  
+            designable.push(k);
             k += 1;
         }
     }
@@ -1752,7 +1691,6 @@ fn energy_of_target_structure(seq: &str, target: &str) -> f64 {
         md.temperature = 37.0;
         md.dangles = 1;
 
-        
         let seq_c = CString::new(seq).unwrap();
         let fc = vrna_fold_compound(seq_c.as_ptr(), &md, VRNA_OPTION_MFE as u32);
         let target_c = CString::new(target_no_pk).unwrap();
@@ -1762,26 +1700,25 @@ fn energy_of_target_structure(seq: &str, target: &str) -> f64 {
     }
 }
 
-
-fn find_mismatched_positions(current_structure: &str, target: &str, n_positions: &[usize]) -> Vec<usize> {
+fn find_mismatched_positions(
+    current_structure: &str,
+    target: &str,
+    n_positions: &[usize],
+) -> Vec<usize> {
     let current_bytes = current_structure.as_bytes();
-    let tgt_no_pk = strip_pseudoknots(target);    
+    let tgt_no_pk = strip_pseudoknots(target);
     let target_bytes = tgt_no_pk.as_bytes();
-    n_positions.iter()
+    n_positions
+        .iter()
         .filter(|&&i| target_bytes[i] != b'.' && current_bytes[i] != target_bytes[i])
         .copied()
         .collect()
 }
 
-
-
-
-
-
 fn compute_pf_defect(seq: &str, target: &str) -> (f64, Vec<f64>, f64, f64) {
     let n = seq.len();
-    let target_bytes = target.as_bytes();          
-    let target_no_pk = strip_pseudoknots(target);   
+    let target_bytes = target.as_bytes();
+    let target_no_pk = strip_pseudoknots(target);
 
     unsafe {
         let mut md: vrna_md_t = std::mem::zeroed();
@@ -1797,19 +1734,15 @@ fn compute_pf_defect(seq: &str, target: &str) -> (f64, Vec<f64>, f64, f64) {
         );
         assert!(!fc.is_null(), "fold_compound returned null");
 
-        
         let mut mfe_struct = vec![0i8; n + 1];
         let mfe = vrna_mfe(fc, mfe_struct.as_mut_ptr());
 
-        
         let mut mfe_scaled: f64 = mfe as f64;
         vrna_exp_params_rescale(fc, &mut mfe_scaled);
 
-        
         let mut pf_struct = vec![0i8; n + 1];
         let _pf_energy = vrna_pf(fc, pf_struct.as_mut_ptr());
 
-        
         let exp_matrices = (*fc).exp_matrices;
         assert!(!exp_matrices.is_null(), "exp_matrices is null");
 
@@ -1818,15 +1751,20 @@ fn compute_pf_defect(seq: &str, target: &str) -> (f64, Vec<f64>, f64, f64) {
         assert!(!probs_ptr.is_null(), "probs is null after vrna_pf");
         assert!(!iindx_ptr.is_null(), "iindx is null");
 
-        
         let mut defects = vec![0.0_f64; n];
         let mut cost = 0.0_f64;
 
         for i in 0..n {
             let mut p_paired = 0.0_f64;
             for j in 0..n {
-                if i == j { continue; }
-                let (a, b) = if i < j { (i + 1, j + 1) } else { (j + 1, i + 1) };
+                if i == j {
+                    continue;
+                }
+                let (a, b) = if i < j {
+                    (i + 1, j + 1)
+                } else {
+                    (j + 1, i + 1)
+                };
                 let iindx_val = *iindx_ptr.add(a) as isize;
                 let idx = iindx_val - b as isize;
                 let pr_val = *probs_ptr.offset(idx) as f64;
@@ -1834,8 +1772,6 @@ fn compute_pf_defect(seq: &str, target: &str) -> (f64, Vec<f64>, f64, f64) {
             }
             p_paired = p_paired.min(1.0);
 
-            
-            
             let should_be_paired = target_bytes[i] != b'.';
             defects[i] = if should_be_paired {
                 (1.0 - p_paired).max(0.0)
@@ -1845,7 +1781,6 @@ fn compute_pf_defect(seq: &str, target: &str) -> (f64, Vec<f64>, f64, f64) {
             cost += defects[i];
         }
 
-        
         let target_c = CString::new(target_no_pk).expect("target has interior NUL");
         let e_target = vrna_eval_structure(fc, target_c.as_ptr()) as f64;
 
@@ -1854,7 +1789,6 @@ fn compute_pf_defect(seq: &str, target: &str) -> (f64, Vec<f64>, f64, f64) {
         (cost / n as f64, defects, mfe as f64, e_target)
     }
 }
-
 
 fn mutate_ks(seq: &str, pair_map: &HashMap<usize, usize>) -> String {
     let chars: Vec<char> = seq.chars().collect();
@@ -1871,25 +1805,32 @@ fn mutate_ks(seq: &str, pair_map: &HashMap<usize, usize>) -> String {
         }
 
         let Some(&j) = pair_map.get(&i) else {
-            continue; 
+            continue;
         };
         if resolved[j] {
-            continue; 
+            continue;
         }
 
         match (chars[i], chars[j]) {
             ('K', 'K') => {
-                let (a, b) = if rng.random::<f64>() < 0.5 { ('G', 'U') } else { ('U', 'G') };
+                let (a, b) = if rng.random::<f64>() < 0.5 {
+                    ('G', 'U')
+                } else {
+                    ('U', 'G')
+                };
                 out[i] = a;
                 out[j] = b;
             }
             ('S', 'S') => {
-                let (a, b) = if rng.random::<f64>() < 0.5 { ('G', 'C') } else { ('C', 'G') };
+                let (a, b) = if rng.random::<f64>() < 0.5 {
+                    ('G', 'C')
+                } else {
+                    ('C', 'G')
+                };
                 out[i] = a;
                 out[j] = b;
             }
             _ => {
-                
                 continue;
             }
         }
@@ -1905,7 +1846,10 @@ fn mutate_ks(seq: &str, pair_map: &HashMap<usize, usize>) -> String {
 
 fn strip_pseudoknots(s: &str) -> String {
     s.chars()
-        .map(|c| match c { '[' | ']' => '.', _ => c })
+        .map(|c| match c {
+            '[' | ']' => '.',
+            _ => c,
+        })
         .collect()
 }
 
@@ -1934,7 +1878,10 @@ pub fn fold_with_pkplex(seq: &str) -> Vec<PkPrediction> {
         assert!(!fc.is_null(), "fold_compound returned null");
 
         let options = vrna_pk_plex_opt_defaults();
-        assert!(!options.is_null(), "vrna_pk_plex_opt_defaults returned null");
+        assert!(
+            !options.is_null(),
+            "vrna_pk_plex_opt_defaults returned null"
+        );
 
         let accessibility: *mut *const std::os::raw::c_int = std::ptr::null_mut();
         let result_ptr = vrna_pk_plex(fc, accessibility, options);
@@ -1966,7 +1913,6 @@ pub fn fold_with_pkplex(seq: &str) -> Vec<PkPrediction> {
             libc::free(result_ptr as *mut c_void);
         }
 
-        
         libc::free(options as *mut c_void);
 
         vrna_fold_compound_free(fc);
@@ -1976,12 +1922,7 @@ pub fn fold_with_pkplex(seq: &str) -> Vec<PkPrediction> {
 
 // Some additional helper functions
 
-
-
-fn find_conserved_positions(
-    sequence: &str,
-    motifs: &[&str],
-) -> Vec<usize> {
+fn find_conserved_positions(sequence: &str, motifs: &[&str]) -> Vec<usize> {
     let mut protected = Vec::new();
 
     for motif in motifs {
@@ -2022,7 +1963,7 @@ fn get_local_protected_positions(
 
 fn assert_slices_balanced(slices: &[Substructure]) -> Result<(), String> {
     for (idx, sub) in slices.iter().enumerate() {
-        let opens  = sub.structure.matches('(').count();
+        let opens = sub.structure.matches('(').count();
         let closes = sub.structure.matches(')').count();
         if opens != closes {
             return Err(format!(
@@ -2030,7 +1971,7 @@ fn assert_slices_balanced(slices: &[Substructure]) -> Result<(), String> {
                 idx, sub.start, sub.end, opens, closes, sub.structure
             ));
         }
-        
+
         let stripped = strip_pseudoknots(&sub.structure);
         let mut depth = 0i32;
         for (pos, c) in stripped.chars().enumerate() {
@@ -2063,24 +2004,24 @@ fn annotate_pk(seq: &str, target: &str, mfe_struct: &str) -> (String, usize) {
     let mut n_reinserted = 0;
 
     for (&i, &j) in pair_map.iter() {
-        
         if tb[i] != b'[' && tb[i] != b']' {
             continue;
         }
         if i >= j {
             continue;
         }
-        
+
         let ok = matches!(
             (sb[i], sb[j]),
-            (b'A', b'U') | (b'U', b'A') |
-            (b'G', b'C') | (b'C', b'G') |
-            (b'G', b'U') | (b'U', b'G')
+            (b'A', b'U') | (b'U', b'A') | (b'G', b'C') | (b'C', b'G') | (b'G', b'U') | (b'U', b'G')
         );
         if ok {
-            
-            if s[i] == '.' { s[i] = tb[i] as char; }
-            if s[j] == '.' { s[j] = tb[j] as char; }
+            if s[i] == '.' {
+                s[i] = tb[i] as char;
+            }
+            if s[j] == '.' {
+                s[j] = tb[j] as char;
+            }
             if s[i] != '.' && s[j] != '.' {
                 n_reinserted += 1;
             }
@@ -2110,7 +2051,6 @@ fn identify_mismatches(mfe_structure: &str, target: &str) -> Vec<usize> {
         .filter(|&i| mfe_bytes.get(i).copied() != Some(target_bytes[i]))
         .collect()
 }
-
 
 fn is_adjacent_to_loop(pos: usize, structure: &str) -> bool {
     let bytes = structure.as_bytes();
@@ -2142,15 +2082,16 @@ fn read_input_file(path: &str) -> Result<(String, String), std::io::Error> {
 }
 
 fn insert_ribosome_sequence(seq: &str) -> String {
-    //let ribosome_sequence = "GGUUAAGCGACUAAGCGUACACGGUGGAUGCCCUGGCAGUCAGAGGCGAUGAAGGACGUGCUAAUCUGCGAUAAGCGUCGGUAAGGUGAUAUGAACCGUUAUAACCGGCGAUUUCCGAAUGGGGAAACCCAGUGUGUUUCGACACACUAUCAUUAACUGAAUCCAUAGGUUAAUGAGGCGAACCGGGGGAACUGAAACAUCUAAGUACCCCGAGGAAAAGAAAUCAACCGAGAUUCCCCCAGUAGCGGCGAGCGAACGGGGAGCAGCCCAGAGCCUGAAUCAGUGUGUGUGUUAGUGGAAGCGUCUGGAAAGGCGCGCGAUACAGGGUGACAGCCCCGUACACAAAAAUGCACAUGCUGUGAGCUCGAUGAGUAGGGCGGGACACGUGGUAUCCUGUCUGAAUAUGGGGGGACCAUCCUCCAAGGCUAAAUACUCCUGACUGACCGAUAGUGAACCAGUACCGUGAGGGAAAGGCGAAAAGAACCCCGGCGAGGGGAGUGAAAAAGAACCUGAAACCGUGUACGUACAAGCAGUGGGAGCACGCUUAGGCGUGUGACUGCGUACCUUUUGUAUAAUGGGUCAGCGACUUAUAUUCUGUAGCAAGGUUAACCGAAUAGGGGAGCCGAAGGGAAACCGAGUCUUAACUGGGCGUUAAGUUGCAGGGUAUAGACCCGAAACCCGGUGAUCUAGCCAUGGGCAGGUUGAAGGUUGGGUAACACUAACUGGAGGACCGAACCGACUAAUGUUGAAAAAUUAGCGGAUGACUUGUGGCUGGGGGUGAAAGGCCAAUCAAACCGGGAGAUAGCUGGUUCUCCCCGAAAGCUAUUUAGGUAGCGCCUCGUGAAUUCAUCUCCGGGGGUAGAGCACUGUUUCGGCAAGGGGGUCAUCCCGACUUACCAACCCGAUGCAAACUGCGAAUACCGGAGAAUGUUAUCACGGGAGACACACGGCGGGUGCUAACGUCCGUCGUGAAGAGGGAAACAACCCAGACCGCCAGCUAAGGUCCCAAAGUCAUGGUUAAGUGGGAAACGAUGUGGGAAGGCCCAGACAGCCAGGAUGUUGGCUUAGAAGCAGCCAUCAUUUAAAGAAAGCGUAAUAGCUCACUGGUCGAGUCGGCCUGCGCGGAAGAUGUAACGGGGCUAAACCAUGCACCGAAGCUGCGGCAGCGACGCUUAUGCGUUGUUGGGUAGGGGAGCGUUCUGUAAGCCUGCGAAGGUGUGCUGUGAGGCAUGCUGGAGGUAUCAGAAGUGCGAAUGCUGACAUAAGUAACGAUAAAGCGGGUGAAAAGCCCGCUCGCCGGAAGACCAAGGGUUCCUGUCCAACGUUAAUCGGGGCAGGGUGAGUCGACCCCUAAGGCGAGGCCGAAAGGCGUAGUCGAUGGGAAACAGGUUAAUAUUCCUGUACUUGGUGUUACUGCGAAGGGGGGACGGAGAAGGCUAUGUUGGCCGGGCGACGGUUGUCCCGGUUUAAGCGUGUAGGCUGGUUUUCCAGGCAAAUCCGGAAAAUCAAGGCUGAGGCGUGAUGACGAGGCACUACGGUGCUGAAGCAACAAAUGCCCUGCUUCCAGGAAAAGCCUCUAAGCAUCAGGUAACAUCAAAUCGUACCCCAAACCGACACAGGUGGUCAGGUAGAGAAUACCAAGGCGCUUGAGAGAACUCGGGUGAAGGAACUAGGCAAAAUGGUGCCGUAACUUCGGGAGAAGGCACGCUGAUAUGUAGGUGAGGUCCCUCGCGGAUGGAGCUGAAAUCAGUCGAAGAUACCAGCUGGCUGCAACUGUUUAUUAAAAACACAGCACUGUGCAAACACGAAAGUGGACGUAUACGGUGUGACGCCUGCCCGGUGCCGGAAGGUUAAUUGAUGGGGUUAGCGCAAGCGAAGCUCUUGAUCGAAGCCCCGGUAAACGGCGGCCGUAACUAUAACGGUCCUAAGGUAGCGAAAUUCCUUGUCGGGUAAGUUCCGACCUGCACGAAUGGCGUAAUGAUGGCCAGGCUGUCUCCACCCGAGACUCAGUGAAAUUGAACUCGCUGUGAAGAUGCAGUGUACCCGCGGCAAGACGGAAAGACCCCGUGAACCUUUACUAUAGCUUGACACUGAACAUUGAGCCUUGAUGUGUAGGAUAGGUGGGAGGCUUUGAAGUGUGGACGCCAGUCUGCAUGGAGCCGACCUUGAAAUACCACCCUUUAAUGUUUGAUGUUCUAACGUUGACCCGUAAUCCGGGUUGCGGACAGUGUCUGGUGGGUAGUUUGACUGGGGCGGUCUCCUCCUAAAGAGUAACGGAGGAGCACGAAGGUUGGCUAAUCCUGGUCGGACAUCAGGAGGUUAGUGCAAUGGCAUAAGCCAGCUUGACUGCGAGCGUGACGGCGCGAGCAGGUGCGAAAGCAGGUCAUAGUGAUCCGGUGGUUCUGAAUGGAAGGGCCAUCGCUCAACGGAUAAAAGGUACUCCGGGGAUAACAGGCUGAUACCGCCCAAGAGUUCAUAUCGACGGCGGUGUUUGGCACCUCGAUGUCGGCUCAUCACAUCCUGGGGCUGAAGUAGGUCCCAAGGGUAUGGCUGUUCGCCAUUUAAAGUGGUACGCGAGCUGGGUUUAGAACGUCGUGAGACAGUUCGGUCCCUAUCUGCCGUGGGCGCUGGAGAACUGAGGGGGGCUGCUCCUAGUACGAGAGGACCGGAGUGGACGCAUCACUGGUGUUCGGGUUGUCAUGCCAAUGGCACUGCCCGGUAGCUAAAUGCGGAAGAGAUAAGUGCUGAAAGCAUCUAAGCACGAAACUUGCCCCGAGAUGAGUUCUCCCUGACCCUUUAAGGGUCCUGAAGGAACGUUGAAGACGACGACGUUGAUAGGCCGGGUGUGUAAGCGCAGCGAUGCGUUGAGCUAACCGGUACUAAUGAACCGUGAGGCUUAACCU"; 
+    //let ribosome_sequence = "GGUUAAGCGACUAAGCGUACACGGUGGAUGCCCUGGCAGUCAGAGGCGAUGAAGGACGUGCUAAUCUGCGAUAAGCGUCGGUAAGGUGAUAUGAACCGUUAUAACCGGCGAUUUCCGAAUGGGGAAACCCAGUGUGUUUCGACACACUAUCAUUAACUGAAUCCAUAGGUUAAUGAGGCGAACCGGGGGAACUGAAACAUCUAAGUACCCCGAGGAAAAGAAAUCAACCGAGAUUCCCCCAGUAGCGGCGAGCGAACGGGGAGCAGCCCAGAGCCUGAAUCAGUGUGUGUGUUAGUGGAAGCGUCUGGAAAGGCGCGCGAUACAGGGUGACAGCCCCGUACACAAAAAUGCACAUGCUGUGAGCUCGAUGAGUAGGGCGGGACACGUGGUAUCCUGUCUGAAUAUGGGGGGACCAUCCUCCAAGGCUAAAUACUCCUGACUGACCGAUAGUGAACCAGUACCGUGAGGGAAAGGCGAAAAGAACCCCGGCGAGGGGAGUGAAAAAGAACCUGAAACCGUGUACGUACAAGCAGUGGGAGCACGCUUAGGCGUGUGACUGCGUACCUUUUGUAUAAUGGGUCAGCGACUUAUAUUCUGUAGCAAGGUUAACCGAAUAGGGGAGCCGAAGGGAAACCGAGUCUUAACUGGGCGUUAAGUUGCAGGGUAUAGACCCGAAACCCGGUGAUCUAGCCAUGGGCAGGUUGAAGGUUGGGUAACACUAACUGGAGGACCGAACCGACUAAUGUUGAAAAAUUAGCGGAUGACUUGUGGCUGGGGGUGAAAGGCCAAUCAAACCGGGAGAUAGCUGGUUCUCCCCGAAAGCUAUUUAGGUAGCGCCUCGUGAAUUCAUCUCCGGGGGUAGAGCACUGUUUCGGCAAGGGGGUCAUCCCGACUUACCAACCCGAUGCAAACUGCGAAUACCGGAGAAUGUUAUCACGGGAGACACACGGCGGGUGCUAACGUCCGUCGUGAAGAGGGAAACAACCCAGACCGCCAGCUAAGGUCCCAAAGUCAUGGUUAAGUGGGAAACGAUGUGGGAAGGCCCAGACAGCCAGGAUGUUGGCUUAGAAGCAGCCAUCAUUUAAAGAAAGCGUAAUAGCUCACUGGUCGAGUCGGCCUGCGCGGAAGAUGUAACGGGGCUAAACCAUGCACCGAAGCUGCGGCAGCGACGCUUAUGCGUUGUUGGGUAGGGGAGCGUUCUGUAAGCCUGCGAAGGUGUGCUGUGAGGCAUGCUGGAGGUAUCAGAAGUGCGAAUGCUGACAUAAGUAACGAUAAAGCGGGUGAAAAGCCCGCUCGCCGGAAGACCAAGGGUUCCUGUCCAACGUUAAUCGGGGCAGGGUGAGUCGACCCCUAAGGCGAGGCCGAAAGGCGUAGUCGAUGGGAAACAGGUUAAUAUUCCUGUACUUGGUGUUACUGCGAAGGGGGGACGGAGAAGGCUAUGUUGGCCGGGCGACGGUUGUCCCGGUUUAAGCGUGUAGGCUGGUUUUCCAGGCAAAUCCGGAAAAUCAAGGCUGAGGCGUGAUGACGAGGCACUACGGUGCUGAAGCAACAAAUGCCCUGCUUCCAGGAAAAGCCUCUAAGCAUCAGGUAACAUCAAAUCGUACCCCAAACCGACACAGGUGGUCAGGUAGAGAAUACCAAGGCGCUUGAGAGAACUCGGGUGAAGGAACUAGGCAAAAUGGUGCCGUAACUUCGGGAGAAGGCACGCUGAUAUGUAGGUGAGGUCCCUCGCGGAUGGAGCUGAAAUCAGUCGAAGAUACCAGCUGGCUGCAACUGUUUAUUAAAAACACAGCACUGUGCAAACACGAAAGUGGACGUAUACGGUGUGACGCCUGCCCGGUGCCGGAAGGUUAAUUGAUGGGGUUAGCGCAAGCGAAGCUCUUGAUCGAAGCCCCGGUAAACGGCGGCCGUAACUAUAACGGUCCUAAGGUAGCGAAAUUCCUUGUCGGGUAAGUUCCGACCUGCACGAAUGGCGUAAUGAUGGCCAGGCUGUCUCCACCCGAGACUCAGUGAAAUUGAACUCGCUGUGAAGAUGCAGUGUACCCGCGGCAAGACGGAAAGACCCCGUGAACCUUUACUAUAGCUUGACACUGAACAUUGAGCCUUGAUGUGUAGGAUAGGUGGGAGGCUUUGAAGUGUGGACGCCAGUCUGCAUGGAGCCGACCUUGAAAUACCACCCUUUAAUGUUUGAUGUUCUAACGUUGACCCGUAAUCCGGGUUGCGGACAGUGUCUGGUGGGUAGUUUGACUGGGGCGGUCUCCUCCUAAAGAGUAACGGAGGAGCACGAAGGUUGGCUAAUCCUGGUCGGACAUCAGGAGGUUAGUGCAAUGGCAUAAGCCAGCUUGACUGCGAGCGUGACGGCGCGAGCAGGUGCGAAAGCAGGUCAUAGUGAUCCGGUGGUUCUGAAUGGAAGGGCCAUCGCUCAACGGAUAAAAGGUACUCCGGGGAUAACAGGCUGAUACCGCCCAAGAGUUCAUAUCGACGGCGGUGUUUGGCACCUCGAUGUCGGCUCAUCACAUCCUGGGGCUGAAGUAGGUCCCAAGGGUAUGGCUGUUCGCCAUUUAAAGUGGUACGCGAGCUGGGUUUAGAACGUCGUGAGACAGUUCGGUCCCUAUCUGCCGUGGGCGCUGGAGAACUGAGGGGGGCUGCUCCUAGUACGAGAGGACCGGAGUGGACGCAUCACUGGUGUUCGGGUUGUCAUGCCAAUGGCACUGCCCGGUAGCUAAAUGCGGAAGAGAUAAGUGCUGAAAGCAUCUAAGCACGAAACUUGCCCCGAGAUGAGUUCUCCCUGACCCUUUAAGGGUCCUGAAGGAACGUUGAAGACGACGACGUUGAUAGGCCGGGUGUGUAAGCGCAGCGAUGCGUUGAGCUAACCGGUACUAAUGAACCGUGAGGCUUAACCU";
 
     let mut result = seq.as_bytes().to_vec(); // Only use as much of the ribosome sequence as we need 
-    let ribosome = &RIBOSOME_SEQUENCE.as_bytes()[..seq.len()]; 
+    let ribosome = &RIBOSOME_SEQUENCE.as_bytes()[..seq.len()];
     for i in 0..result.len() {
-        if result[i] == b'N' { result[i] = ribosome[i]; 
-            } 
-        } 
-    String::from_utf8(result).unwrap() 
+        if result[i] == b'N' {
+            result[i] = ribosome[i];
+        }
+    }
+    String::from_utf8(result).unwrap()
 }
 
 fn mutate_ribosome(seq_in: &str, structure: &str, n_positions: &[usize]) -> String {
@@ -2177,18 +2118,15 @@ fn mutate_ribosome(seq_in: &str, structure: &str, n_positions: &[usize]) -> Stri
     let mut_struct: Vec<char> = structure.chars().collect();
 
     for i in 0..mut_seq.len() {
-        
         if !designable.contains(&i) {
             continue;
         }
 
-        
         if conserved_positions.contains(&i) {
             continue;
         }
 
         if let Some(&j) = pair_map.get(&i) {
-            
             if !designable.contains(&j) {
                 // Only fix i from the 5' side to avoid double work
                 if i < j {
@@ -2197,20 +2135,17 @@ fn mutate_ribosome(seq_in: &str, structure: &str, n_positions: &[usize]) -> Stri
                 continue;
             }
 
-            
             if i >= j {
                 continue;
             }
 
-            
             if rng.random::<f64>() < 0.20 {
-                let choice = paired_nucleotides
-                    [rng.random_range(0..paired_nucleotides.len())];
+                let choice = paired_nucleotides[rng.random_range(0..paired_nucleotides.len())];
                 mut_seq[i] = choice;
                 mut_seq[j] = *comp_dict.get(&choice).unwrap();
             }
 
-            if hard_loops && mut_struct[i] == '(' && mut_struct[i+1] == ')'{
+            if hard_loops && mut_struct[i] == '(' && mut_struct[i + 1] == ')' {
                 let choice = if rng.random::<f64>() < 0.5 { 'G' } else { 'C' };
                 mut_seq[i] = choice;
                 mut_seq[i + 1] = *comp_dict.get(&choice).unwrap();
@@ -2220,7 +2155,7 @@ fn mutate_ribosome(seq_in: &str, structure: &str, n_positions: &[usize]) -> Stri
                         if partner_of_next == j - 2
                             && designable.contains(&(i + 2))
                             && designable.contains(&(j - 2))
-                            {
+                        {
                             let choice2 = if rng.random::<f64>() < 0.5 { 'G' } else { 'C' };
                             mut_seq[i + 2] = choice2;
                             mut_seq[j - 2] = *comp_dict.get(&choice2).unwrap();
@@ -2230,8 +2165,8 @@ fn mutate_ribosome(seq_in: &str, structure: &str, n_positions: &[usize]) -> Stri
                 if i + 3 < j {
                     if let Some(&partner_of_next) = pair_map.get(&(i + 3)) {
                         if partner_of_next == j - 3
-                        && designable.contains(&(i + 3))
-                        && designable.contains(&(j - 3))
+                            && designable.contains(&(i + 3))
+                            && designable.contains(&(j - 3))
                         {
                             let choice3 = if rng.random::<f64>() < 0.5 { 'G' } else { 'U' };
                             mut_seq[i + 3] = choice3;
@@ -2241,15 +2176,13 @@ fn mutate_ribosome(seq_in: &str, structure: &str, n_positions: &[usize]) -> Stri
                 }
             }
 
-            let near_loop =
-                is_adjacent_to_loop(i, structure) || is_adjacent_to_loop(j, structure);
+            let near_loop = is_adjacent_to_loop(i, structure) || is_adjacent_to_loop(j, structure);
 
             if near_loop {
                 let choice = if rng.random::<f64>() < 0.5 { 'G' } else { 'C' };
                 mut_seq[i] = choice;
                 mut_seq[j] = *comp_dict.get(&choice).unwrap();
 
-                
                 if i + 1 < j {
                     if let Some(&partner_of_next) = pair_map.get(&(i + 1)) {
                         if partner_of_next == j - 1
@@ -2265,7 +2198,6 @@ fn mutate_ribosome(seq_in: &str, structure: &str, n_positions: &[usize]) -> Stri
                     }
                 }
 
-                
                 if i + 2 < j {
                     if let Some(&partner_of_next) = pair_map.get(&(i + 2)) {
                         if partner_of_next == j - 2
@@ -2292,38 +2224,36 @@ fn mutate_ribosome(seq_in: &str, structure: &str, n_positions: &[usize]) -> Stri
     mut_seq.into_iter().collect()
 }
 
-fn important_motifs() -> &'static[&'static str] {
-    let conserved_motifs : &[&str] = &[
-    "GGCCAAAU", // Alpha KL
-    "UAAACCGG",
-    "UUAAUCGAUACCUGGGCUGGCAGAGCGUGCCGGCAUGCUCGGGUGUGAGAUGAGCUGUAUUGAUUGC", // Broccoli
-    "CCGUGCGAGACGGUCGGGUCCAUAGCUAAUUCGUUAGUUAUGGAGGCUCGUACGG", // Broccoli 
-    "UGAAGCCUCCACG",
-    "GCACCUCCGAAGU",// Regular KL
-    "AUCACGGGAGACACACGGCGGGUGNNNNNNNNNNNNNNNNNNNNGCAUGCUGGAGGUAUCAGAAGUGCGAAUGCUGACAUAAGUAACGAUAAAGCGGGUGAAAAGCCCGCUCGCCGGAAGACCAAGGGUUCCUGUCCAACGUUAAUCGGGGCAGGGUGAGUCGACCCCUAAGGCGAGGCCGAAAGGCGUAGUCGAUGGGAAACA",];
+fn important_motifs() -> &'static [&'static str] {
+    let conserved_motifs: &[&str] = &[
+        "GGCCAAAU", // Alpha KL
+        "UAAACCGG",
+        "UUAAUCGAUACCUGGGCUGGCAGAGCGUGCCGGCAUGCUCGGGUGUGAGAUGAGCUGUAUUGAUUGC", // Broccoli
+        "CCGUGCGAGACGGUCGGGUCCAUAGCUAAUUCGUUAGUUAUGGAGGCUCGUACGG",             // Broccoli
+        "UGAAGCCUCCACG",
+        "GCACCUCCGAAGU", // Regular KL
+        "AUCACGGGAGACACACGGCGGGUGNNNNNNNNNNNNNNNNNNNNGCAUGCUGGAGGUAUCAGAAGUGCGAAUGCUGACAUAAGUAACGAUAAAGCGGGUGAAAAGCCCGCUCGCCGGAAGACCAAGGGUUCCUGUCCAACGUUAAUCGGGGCAGGGUGAGUCGACCCCUAAGGCGAGGCCGAAAGGCGUAGUCGAUGGGAAACA",
+    ];
 
-    return conserved_motifs
+    return conserved_motifs;
 }
 
-fn find_hard_loops(structure: &str,) -> bool {
-
-    let motifs : &[&str] = &["()"];
-    let mut motif_found : bool = false;
-    for n in motifs{
-        for i in 0..structure.len()-1{
+fn find_hard_loops(structure: &str) -> bool {
+    let motifs: &[&str] = &["()"];
+    let mut motif_found: bool = false;
+    for n in motifs {
+        for i in 0..structure.len() - 1 {
             let j = i + n.len();
             let window = &structure[i..j];
             if window == *n {
                 motif_found = true;
-                break
-            }
-            else {
-                continue
+                break;
+            } else {
+                continue;
             };
         }
-    } 
+    }
     motif_found
-    
 }
 
 fn ribosome_similarity(seq_in: &str, n_positions: &[usize]) -> RibosomeSimilarity {
@@ -2333,12 +2263,17 @@ fn ribosome_similarity(seq_in: &str, n_positions: &[usize]) -> RibosomeSimilarit
     assert!(
         seq_bytes.len() <= ref_bytes.len(),
         "seq_in ({} nt) is longer than the reference ribosome sequence ({} nt)",
-        seq_bytes.len(), ref_bytes.len()
+        seq_bytes.len(),
+        ref_bytes.len()
     );
 
     let mut mismatched_positions = Vec::new();
     for &pos in n_positions {
-        assert!(pos < seq_bytes.len(), "position {} out of bounds for seq_in", pos);
+        assert!(
+            pos < seq_bytes.len(),
+            "position {} out of bounds for seq_in",
+            pos
+        );
         if seq_bytes[pos] != ref_bytes[pos] {
             mismatched_positions.push(pos);
         }
@@ -2346,8 +2281,16 @@ fn ribosome_similarity(seq_in: &str, n_positions: &[usize]) -> RibosomeSimilarit
 
     let total = n_positions.len();
     let matches = total - mismatched_positions.len();
-    let identity = if total == 0 { 1.0 } else { matches as f64 / total as f64 };
+    let identity = if total == 0 {
+        1.0
+    } else {
+        matches as f64 / total as f64
+    };
 
-    RibosomeSimilarity { matches, total, identity, mismatched_positions }
+    RibosomeSimilarity {
+        matches,
+        total,
+        identity,
+        mismatched_positions,
+    }
 }
-

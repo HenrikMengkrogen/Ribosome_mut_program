@@ -6,4 +6,3 @@
 )]
 
 include!(concat!(env!("OUT_DIR"), "/vienna_rna_bindings.rs"));
-

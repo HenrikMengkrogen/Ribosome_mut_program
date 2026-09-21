@@ -8,21 +8,16 @@ fn require_file(path: &Path) {
 }
 
 fn main() {
-    let manifest_dir = PathBuf::from(
-        env::var("CARGO_MANIFEST_DIR")
-            .expect("CARGO_MANIFEST_DIR is not set"),
-    );
+    let manifest_dir =
+        PathBuf::from(env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR is not set"));
 
-    let out_dir = PathBuf::from(
-        env::var("OUT_DIR")
-            .expect("OUT_DIR is not set"),
-    );
+    let out_dir = PathBuf::from(env::var("OUT_DIR").expect("OUT_DIR is not set"));
 
-    let target = env::var("TARGET")
-        .expect("TARGET is not set by Cargo");
+    let target = env::var("TARGET").expect("TARGET is not set by Cargo");
 
-    let target_os = env::var("CARGO_CFG_TARGET_OS")
-        .expect("CARGO_CFG_TARGET_OS is not set");
+    
+
+    let target_os = env::var("CARGO_CFG_TARGET_OS").expect("CARGO_CFG_TARGET_OS is not set");
 
     let prefix = manifest_dir.join("vendor").join("RNAlib");
     let include_dir = prefix.join("include");
@@ -35,13 +30,18 @@ fn main() {
      * ├── include/
      * │   └── ViennaRNA/
      * └── prebuilt/
-     *     └── x86_64-apple-darwin/
+     *     ├── x86_64-apple-darwin/
+     *     ├── x86_64-unknown-linux-gnu/
+     *     └── x86_64-pc-windows-gnu/
      *         ├── libRNA.a
      *         ├── libgsl.a
      *         ├── libgslcblas.a
      *         ├── libmpfr.a
      *         └── libgmp.a
+     *
+     * The selected directory is based on Cargo's TARGET value.
      */
+
     let lib_dir = prefix.join("prebuilt").join(&target);
 
     if !include_dir.join("ViennaRNA").is_dir() {
@@ -146,4 +146,3 @@ fn main() {
         other => panic!("Unsupported target OS `{other}`"),
     }
 }
-
