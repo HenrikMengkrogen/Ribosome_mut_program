@@ -9,6 +9,7 @@ use rayon::prelude::*;
 use std::fs::{self, File};
 use std::io::Write;
 use std::path::Path;
+use std::fs;
 
 
 const RIBOSOMAL_RNA: bool = false; 
@@ -39,16 +40,25 @@ fn main() {
 
     //Imports file here -> Note that they have to be formatted with both Sequence and Structure. Files need to be named "input_*.txt"
     
-    let mut input_files: Vec<_> = fs::read_dir("../misc")
-        .expect("Failed to read ../misc directory")
+    
+
+    let input_dir = match fs::read_dir("misc") {
+        Ok(entries) => entries,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+            fs::read_dir("../misc")
+                .expect("Could not find a misc directory at either ./misc or ../misc")
+        }
+        Err(error) => {
+            panic!("Failed to read ./misc: {error}");
+        }
+    };
+
+    let mut input_files: Vec<_> = input_dir
         .filter_map(|entry| {
             let path = entry.ok()?.path();
 
             if path.is_file()
-                && path
-                    .file_name()?
-                    .to_str()?
-                    .starts_with("input_")
+                && path.file_name()?.to_str()?.starts_with("input_")
                 && path.extension()?.to_str()? == "txt"
             {
                 Some(path)
