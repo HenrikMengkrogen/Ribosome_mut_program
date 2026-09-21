@@ -1,29 +1,57 @@
+use std::env;
+use std::path::PathBuf;
+
 fn main() {
-    let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
-    let vendor_lib = format!("{}/vendor/RNAlib/lib", manifest_dir);
+    let manifest_dir = PathBuf::from(
+        env::var("CARGO_MANIFEST_DIR")
+            .expect("CARGO_MANIFEST_DIR is not set"),
+    );
 
-    println!("cargo:rustc-link-search=native={}", vendor_lib);
+    let prefix = manifest_dir.join("vendor").join("RNAlib");
+    let include_dir = prefix.join("include");
+    let lib_dir = prefix.join("lib");
 
-    // ViennaRNA static library
+    if !include_dir.join("ViennaRNA").exists() {
+        panic!(
+            "ViennaRNA headers are missing. Expected: {}",
+            include_dir.join("ViennaRNA").display()
+        );
+    }
+
+    if !lib_dir.join("libRNA.a").exists() {
+        panic!(
+            "Vendored ViennaRNA static library is missing. Expected: {}",
+            lib_dir.join("libRNA.a").display()
+        );
+    }
+
+    println!("cargo:rerun-if-changed={}", include_dir.display());
+    println!("cargo:rerun-if-changed={}", lib_dir.display());
+
+    println!("cargo:rustc-link-search=native={}", lib_dir.display());
+
     println!("cargo:rustc-link-lib=static=RNA");
-
-    // GSL static libraries (gsl depends on gslcblas)
     println!("cargo:rustc-link-lib=static=gsl");
     println!("cargo:rustc-link-lib=static=gslcblas");
-
-    // MPFR static library (depends on gmp)
     println!("cargo:rustc-link-lib=static=mpfr");
-
-    // GMP static library
     println!("cargo:rustc-link-lib=static=gmp");
 
-    // C++ standard library (system, available on all macOS)
-    println!("cargo:rustc-link-lib=dylib=c++");
+    let target_os = env::var("CARGO_CFG_TARGET_OS")
+        .expect("CARGO_CFG_TARGET_OS is not set");
 
-    // System libraries (available on all macOS)
-    println!("cargo:rustc-link-lib=dylib=m");
-    println!("cargo:rustc-link-lib=dylib=z");
-    println!("cargo:rustc-link-lib=dylib=pthread");
-
-    println!("cargo:rerun-if-changed=vendor/RNAlib/lib/libRNA.a");
+    match target_os.as_str() {
+        "linux" => {
+            println!("cargo:rustc-link-lib=m");
+            println!("cargo:rustc-link-lib=pthread");
+            println!("cargo:rustc-link-lib=dl");
+            println!("cargo:rustc-link-lib=z");
+        }
+        "macos" => {
+            println!("cargo:rustc-link-lib=framework=CoreFoundation");
+            println!("cargo:rustc-link-lib=iconv");
+            println!("cargo:rustc-link-lib=z");
+        }
+        other => panic!("Unsupported target OS: {other}"),
+    }
 }
+
