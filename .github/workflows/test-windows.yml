@@ -71,13 +71,15 @@ jobs:
           export CPPFLAGS="-I/mingw64/include"
           export LDFLAGS="-L/mingw64/lib"
 
-          ./configure \
+           ./configure \
             --prefix="/mingw64" \
             --disable-shared \
             --enable-static \
             --without-openmp \
             --without-perl \
-            --without-python
+            --without-python \
+            --without-svm
+
 
           make -j"$(nproc)"
 
