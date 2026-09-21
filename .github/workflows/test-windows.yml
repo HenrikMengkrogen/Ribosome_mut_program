@@ -69,7 +69,9 @@ jobs:
           export PATH="/mingw64/bin:$PATH"
           export PKG_CONFIG_PATH="/mingw64/lib/pkgconfig"
           export CPPFLAGS="-I/mingw64/include"
+          export CXXFLAGS="-include cstdint"
           export LDFLAGS="-L/mingw64/lib"
+
 
             ./configure \
             --prefix="/mingw64" \
