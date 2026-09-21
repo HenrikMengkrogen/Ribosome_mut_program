@@ -4,7 +4,6 @@ use std::ffi::{CStr, CString};
 use librna_sys::*;
 use rand::RngExt;
 use rand::seq::IndexedRandom;
-use std::process::Command;
 use std::os::raw::c_void;
 use rayon::prelude::*;
 use std::fs::{self, File};
