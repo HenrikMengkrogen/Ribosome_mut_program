@@ -9,7 +9,6 @@ use rayon::prelude::*;
 use std::fs::{self, File};
 use std::io::Write;
 use std::path::Path;
-use std::fs;
 
 
 const RIBOSOMAL_RNA: bool = false; 
