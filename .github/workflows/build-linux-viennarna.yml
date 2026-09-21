@@ -136,7 +136,24 @@ jobs:
             --without-python
 
           make -j"$(nproc)"
-          make install
+
+          # Do not use `make install`: ViennaRNA 2.7.0 may attempt to
+          # install optional Python files into /RNA on GitHub runners.
+          # We only need the static C archive for the Rust linker.
+          mkdir -p "$PREFIX/lib"
+
+          RNA_ARCHIVE="$(find . -type f -name libRNA.a -print -quit)"
+
+          if [ -z "$RNA_ARCHIVE" ]; then
+            echo "Could not find libRNA.a after building ViennaRNA" >&2
+            find . -type f -name 'libRNA*' -print >&2
+            exit 1
+          fi
+
+          cp "$RNA_ARCHIVE" "$PREFIX/lib/libRNA.a"
+
+          ls -lah "$PREFIX/lib/libRNA.a"
+
 
 
       - name: Collect Linux archives
