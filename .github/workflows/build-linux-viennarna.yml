@@ -12,7 +12,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install build tools
+        shell: bash
         run: |
+          set -euxo pipefail
+
           sudo apt-get update
           sudo apt-get install -y \
             build-essential \
@@ -46,7 +49,8 @@ jobs:
           cd "$BUILD_ROOT/src"
 
           # GMP
-          curl -fL https://gmplib.org/download/gmp/gmp-6.3.0.tar.xz
+          curl -fL -o gmp-6.3.0.tar.xz \
+            https://gmplib.org/download/gmp/gmp-6.3.0.tar.xz
           tar -xf gmp-6.3.0.tar.xz
           cd gmp-6.3.0
 
@@ -61,10 +65,7 @@ jobs:
           # MPFR
           cd "$BUILD_ROOT/src"
           curl -fL -o mpfr-4.2.1.tar.xz \
-             https://www.mpfr.org/mpfr-4.2.1/mpfr-4.2.1.tar.xz
-
- 	    
-
+            https://www.mpfr.org/mpfr-4.2.1/mpfr-4.2.1.tar.xz
           tar -xf mpfr-4.2.1.tar.xz
           cd mpfr-4.2.1
 
@@ -81,7 +82,6 @@ jobs:
           cd "$BUILD_ROOT/src"
           curl -fL -o gsl-2.8.tar.gz \
             https://ftp.gnu.org/gnu/gsl/gsl-2.8.tar.gz
-
           tar -xf gsl-2.8.tar.gz
           cd gsl-2.8
 
@@ -94,15 +94,9 @@ jobs:
           make install
 
           # ViennaRNA
-          #
-          # IMPORTANT:
-          # Use the same ViennaRNA version as your vendored headers.
-          #
           cd "$BUILD_ROOT/src"
-          curl -fL \
-            -o ViennaRNA-2.7.0.tar.gz \
+          curl -fL -o ViennaRNA-2.7.0.tar.gz \
             https://github.com/ViennaRNA/ViennaRNA/releases/download/v2.7.0/ViennaRNA-2.7.0.tar.gz
-
           tar -xf ViennaRNA-2.7.0.tar.gz
           cd ViennaRNA-2.7.0
 
@@ -140,7 +134,7 @@ jobs:
         run: |
           set -euxo pipefail
 
-          mkdir /tmp/rna-library-check
+          mkdir -p /tmp/rna-library-check
           cd /tmp/rna-library-check
 
           ar x \
