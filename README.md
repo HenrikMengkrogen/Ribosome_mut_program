@@ -12,6 +12,12 @@ NB! The python folder and script is not in use!
 https://github.com/HenrikMengkrogen/Ribosome_mut_program.git && cd Ribosome_mut_program && bash setup.sh
 ```
 
+```bash
+curl https://sh.rustup.rs -sSf | sh
+```
+
+
+
 That's it. The setup script will:
 1. Install Rust (if needed)
 2. Install Homebrew + dependencies (if vendored libraries aren't included)
