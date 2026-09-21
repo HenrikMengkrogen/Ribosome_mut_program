@@ -91,6 +91,13 @@ vendor_complete() {
 
 # ── macOS: install deps with Homebrew and copy static libs ──────
 setup_macos() {
+    # Compiler toolchain (needed for the source-build fallback and by Homebrew)
+    if ! xcode-select -p &>/dev/null; then
+        echo "Installing Xcode Command Line Tools (a dialog will appear)..."
+        xcode-select --install || true
+        die "Finish the Command Line Tools install, then re-run this script."
+    fi
+
     # Locate or install Homebrew
     if ! have brew; then
         for candidate in /opt/homebrew/bin/brew /usr/local/bin/brew; do
@@ -121,28 +128,42 @@ setup_macos() {
     echo "Copying static libraries to vendor/..."
     mkdir -p "$VENDOR_DIR/lib" "$VENDOR_DIR/include"
 
-    # Each formula has its own prefix; --prefix <formula> is correct on both Intel and ARM
+    # Each formula has its own prefix; --prefix <formula> is correct on both Intel and ARM.
+    # Returns 1 (instead of exiting) if the static lib isn't shipped by the formula.
     copy_brew_lib() {
-        local formula="$1" lib="$2"
-        local src
-        src="$(brew --prefix "$formula")/lib/$lib"
-        [[ -f "$src" ]] || die "Could not find $lib at $src"
-        cp "$src" "$VENDOR_DIR/lib/"
+        local formula="$1" lib="$2" prefix src
+        prefix="$(brew --prefix "$formula")"
+        src="$prefix/lib/$lib"
+        if [[ ! -f "$src" ]]; then
+            # Fall back to searching the whole keg
+            src="$(find "$(brew --cellar "$formula")" -name "$lib" -print -quit 2>/dev/null || true)"
+        fi
+        if [[ -n "$src" && -f "$src" ]]; then
+            cp "$src" "$VENDOR_DIR/lib/"
+            return 0
+        fi
+        warn "$lib not shipped by Homebrew's $formula (looked in $prefix)"
+        return 1
     }
 
-    copy_brew_lib viennarna libRNA.a
-    copy_brew_lib gsl       libgsl.a
-    copy_brew_lib gsl       libgslcblas.a
-    copy_brew_lib mpfr      libmpfr.a
-    copy_brew_lib gmp       libgmp.a
+    for pair in "gsl:libgsl.a" "gsl:libgslcblas.a" "mpfr:libmpfr.a" "gmp:libgmp.a"; do
+        copy_brew_lib "${pair%%:*}" "${pair##*:}" \
+            || die "Missing static library ${pair##*:}. Homebrew's ${pair%%:*} doesn't include it on this machine."
+    done
 
-    # Headers
-    local rna_inc
-    rna_inc="$(brew --prefix viennarna)/include/ViennaRNA"
-    if [[ -d "$rna_inc" ]]; then
-        cp -R "$rna_inc" "$VENDOR_DIR/include/"
+    # Homebrew's ViennaRNA often has no static libRNA.a on newer setups (esp. Apple Silicon),
+    # so fall back to building it from source into vendor/RNAlib.
+    if ! copy_brew_lib viennarna libRNA.a; then
+        warn "Building ViennaRNA from source instead..."
+        build_viennarna_from_source
     else
-        warn "ViennaRNA headers not found at $rna_inc"
+        local rna_inc
+        rna_inc="$(brew --prefix viennarna)/include/ViennaRNA"
+        if [[ -d "$rna_inc" ]]; then
+            cp -R "$rna_inc" "$VENDOR_DIR/include/"
+        else
+            warn "ViennaRNA headers not found at $rna_inc"
+        fi
     fi
 }
 
@@ -204,14 +225,18 @@ build_viennarna_from_source() {
     tar -xzf "$tmp/viennarna.tar.gz" -C "$tmp"
 
     pushd "$tmp/ViennaRNA-${VIENNARNA_VERSION}" >/dev/null
+    # Newer Apple clang treats some old-style C constructs as errors; be lenient
+    if [[ "$OS" == "macos" ]]; then
+        export CFLAGS="${CFLAGS:-} -Wno-error -Wno-implicit-function-declaration -Wno-int-conversion"
+    fi
     ./configure \
         --prefix="$VENDOR_DIR" \
         --disable-shared --enable-static \
         --with-pic \
         --without-perl --without-python --without-doc \
         --without-kinfold --without-forester --without-rnalocmin \
-        --disable-lto --disable-openmp >/dev/null
-    make -j"$(nproc 2>/dev/null || echo 2)" >/dev/null
+        --disable-lto --disable-openmp >"$tmp/configure.log" 2>&1 || { tail -n 40 "$tmp/configure.log"; die "ViennaRNA configure failed"; }
+    make -j"$(sysctl -n hw.ncpu 2>/dev/null || nproc 2>/dev/null || echo 2)" >"$tmp/make.log" 2>&1 || { tail -n 40 "$tmp/make.log"; die "ViennaRNA build failed"; }
     make install >/dev/null
     popd >/dev/null
 }
