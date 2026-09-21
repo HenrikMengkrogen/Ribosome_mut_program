@@ -81,33 +81,52 @@ jobs:
             --without-swig \
             --without-svm
 
-                    # ViennaRNA 2.7.0 has incompatible legacy callback declarations on
-          # recent MinGW GCC. Make the implementation match lists.h, whose
-          # empty callback parameter lists permit its internal callback types.
-          perl -0pi -e '
-            s{
-              (lst_kill\s*$\s*LIST\s*\*\s*l\s*,\s*)
-              void\s*\(\s*\*\s*freeNode\s*$\s*$\s*void\s*\*\s*$
-            }{$1void (*freeNode)()}gx;
-          ' src/ViennaRNA/datastructures/lists.c
+          # ViennaRNA 2.7.0 uses old callback declarations in lists.h, while
+          # lists.c uses explicit void-pointer callback parameters. Update the
+          # header to match the implementation.
+          python - <<'PY'
+          from pathlib import Path
+          import re
 
-          perl -0pi -e '
-            s{
-              (lst_mergesort\s*$\s*LIST\s*\*\s*l\s*,\s*)
-              int\s*\(\s*\*\s*cmp_func\s*$\s*$\s*void\s*\*\s*,\s*void\s*\*\s*$
-            }{$1int (*cmp_func)()}gx;
-          ' src/ViennaRNA/datastructures/lists.c
+          path = Path("src/ViennaRNA/datastructures/lists.h")
+          text = path.read_text()
 
-          # Fail clearly if the expected compatibility patch was not applied.
-          grep -A3 -n 'lst_kill(LIST' \
-            src/ViennaRNA/datastructures/lists.c
+          text, kill_count = re.subn(
+              r'void\s+lst_kill\s*$\s*LIST\s*\*\s*l\s*,\s*'
+              r'void\s*\(\s*\*\s*freeNode\s*$\s*$\s*$\s*\);',
+              'void lst_kill (LIST * l, void (*freeNode)(void *));',
+              text,
+          )
 
-          grep -A3 -n 'lst_mergesort(LIST' \
-            src/ViennaRNA/datastructures/lists.c
+          text, sort_count = re.subn(
+              r'void\s+lst_mergesort\s*$\s*LIST\s*\*\s*l\s*,\s*'
+              r'int\s*\(\s*\*\s*cmp_func\s*$\s*$\s*$\s*\);',
+              'void lst_mergesort (LIST * l, int (*cmp_func)(void *, void *));',
+              text,
+          )
+
+          if kill_count != 1 or sort_count != 1:
+              raise SystemExit(
+                  f"Expected one patch for each declaration; "
+                  f"lst_kill={kill_count}, lst_mergesort={sort_count}"
+              )
+
+          path.write_text(text)
+          PY
+
+          # Show the two declarations after patching. This should appear in
+          # the Actions log before compilation starts.
+          grep -nE 'lst_kill|lst_mergesort' \
+            src/ViennaRNA/datastructures/lists.h
+
+          # ViennaRNA calls these generic legacy callbacks with several
+          # internal pointer types. Keep those diagnostics as warnings.
+          export CFLAGS="${CFLAGS:-} -Wno-error=incompatible-pointer-types"
 
           # Build sequentially because generated ViennaRNA headers can race
-          # under parallel GNU Make builds on MinGW/MSYS2.
+          # during parallel MinGW/MSYS2 builds.
           make
+
 
 
 
