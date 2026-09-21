@@ -123,6 +123,24 @@ main/misc/output/
 ```
 
 
+## Native dependencies
+The project uses the following native libraries:
+
+* ViennaRNA — RNA secondary-structure prediction and MFE folding
+* GMP — GNU Multiple Precision Arithmetic Library
+* MPFR — multiple-precision floating-point arithmetic
+* GSL — GNU Scientific Library
+* The required static archives are vendored in the repository under:
+```bash
+vendor/RNAlib/prebuilt/
+```
+Platform-specific libraries are stored in directories such as:
+```bash
+vendor/RNAlib/prebuilt/x86_64-unknown-linux-gnu/
+```
+The Rust build script selects the correct prebuilt library directory for the current target platform.
+
+
 ## Project Structure
 ```bash
 Ribosome_mut_program/
