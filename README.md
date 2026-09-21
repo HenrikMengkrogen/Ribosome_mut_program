@@ -45,7 +45,7 @@ Go to ./main/src and then type
 ```bash
 cargo run
 ```
-
+Input files are found in ./main/misc and are labeled input_*. It is important that the file always contains sequence and structure as dot-bracket format. Once the sequence generation is complete the output file will be written out in ./main/misc/output/
 
 ## Project structure
 
