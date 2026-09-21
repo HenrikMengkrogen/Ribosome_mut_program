@@ -81,9 +81,24 @@ jobs:
             --without-swig \
             --without-svm
 
+          # Patch legacy function-pointer declarations in ViennaRNA 2.7.0.
+          # Recent MinGW GCC rejects these old-style declarations because they
+          # conflict with the corresponding definitions in lists.c.
+          sed -i \
+            's/void lst_kill (LIST \* l, void (\*freeNode) ());/void lst_kill (LIST * l, void (*freeNode)(void *));/' \
+            src/ViennaRNA/datastructures/lists.h
 
+          sed -i \
+            's/void lst_mergesort (LIST \* l, int (\*cmp_func) ());/void lst_mergesort (LIST * l, int (*cmp_func)(void *, void *));/' \
+            src/ViennaRNA/datastructures/lists.h
 
-          make 
+          grep -nE 'lst_kill|lst_mergesort' \
+            src/ViennaRNA/datastructures/lists.h
+
+          # ViennaRNA 2.7.0 has generated compatibility headers that can race
+          # under parallel GNU Make builds on MinGW/MSYS2.
+          make
+
 
           RNA_ARCHIVE="$(find . -type f -name libRNA.a -print -quit)"
 
