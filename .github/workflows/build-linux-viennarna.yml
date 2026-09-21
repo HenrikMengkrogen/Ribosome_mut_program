@@ -49,8 +49,14 @@ jobs:
           cd "$BUILD_ROOT/src"
 
           # GMP
-          curl -fL -o gmp-6.3.0.tar.xz \
-            https://gmplib.org/download/gmp/gmp-6.3.0.tar.xz
+          curl --fail --location \
+            --retry 5 \
+            --retry-delay 5 \
+            --connect-timeout 30 \
+            --max-time 300 \
+            -o gmp-6.3.0.tar.xz \
+            https://ftp.gnu.org/gnu/gmp/gmp-6.3.0.tar.xz
+
           tar -xf gmp-6.3.0.tar.xz
           cd gmp-6.3.0
 
@@ -64,8 +70,15 @@ jobs:
 
           # MPFR
           cd "$BUILD_ROOT/src"
-          curl -fL -o mpfr-4.2.1.tar.xz \
-            https://www.mpfr.org/mpfr-4.2.1/mpfr-4.2.1.tar.xz
+
+          curl --fail --location \
+            --retry 5 \
+            --retry-delay 5 \
+            --connect-timeout 30 \
+            --max-time 300 \
+            -o mpfr-4.2.1.tar.xz \
+            https://ftp.gnu.org/gnu/mpfr/mpfr-4.2.1.tar.xz
+
           tar -xf mpfr-4.2.1.tar.xz
           cd mpfr-4.2.1
 
@@ -80,8 +93,15 @@ jobs:
 
           # GSL
           cd "$BUILD_ROOT/src"
-          curl -fL -o gsl-2.8.tar.gz \
+
+          curl --fail --location \
+            --retry 5 \
+            --retry-delay 5 \
+            --connect-timeout 30 \
+            --max-time 300 \
+            -o gsl-2.8.tar.gz \
             https://ftp.gnu.org/gnu/gsl/gsl-2.8.tar.gz
+
           tar -xf gsl-2.8.tar.gz
           cd gsl-2.8
 
@@ -95,8 +115,15 @@ jobs:
 
           # ViennaRNA
           cd "$BUILD_ROOT/src"
-          curl -fL -o ViennaRNA-2.7.0.tar.gz \
+
+          curl --fail --location \
+            --retry 5 \
+            --retry-delay 5 \
+            --connect-timeout 30 \
+            --max-time 300 \
+            -o ViennaRNA-2.7.0.tar.gz \
             https://github.com/ViennaRNA/ViennaRNA/releases/download/v2.7.0/ViennaRNA-2.7.0.tar.gz
+
           tar -xf ViennaRNA-2.7.0.tar.gz
           cd ViennaRNA-2.7.0
 
@@ -148,4 +175,3 @@ jobs:
           name: viennarna-x86_64-unknown-linux-gnu
           path: vendor/RNAlib/prebuilt/x86_64-unknown-linux-gnu/
           if-no-files-found: error
-
