@@ -27,12 +27,11 @@ jobs:
           install: >-
             mingw-w64-x86_64-toolchain
             mingw-w64-x86_64-clang
-            mingw-w64-x86_64-libclang
             mingw-w64-x86_64-pkgconf
             mingw-w64-x86_64-gmp
             mingw-w64-x86_64-mpfr
             mingw-w64-x86_64-gsl
-            mingw-w64-x86_64-viennarna
+
             git
             curl
             make
@@ -46,6 +45,55 @@ jobs:
         shell: pwsh
         run: |
           rustup target add x86_64-pc-windows-gnu
+
+
+      - name: Build static ViennaRNA for Windows
+        run: |
+          set -euxo pipefail
+
+          BUILD_ROOT="$RUNNER_TEMP/viennarna-windows-build"
+          mkdir -p "$BUILD_ROOT"
+          cd "$BUILD_ROOT"
+
+          curl --fail --location \
+            --retry 5 \
+            --retry-delay 5 \
+            --connect-timeout 30 \
+            --max-time 300 \
+            -o ViennaRNA-2.7.0.tar.gz \
+            https://github.com/ViennaRNA/ViennaRNA/releases/download/v2.7.0/ViennaRNA-2.7.0.tar.gz
+
+          tar -xf ViennaRNA-2.7.0.tar.gz
+          cd ViennaRNA-2.7.0
+
+          export PATH="/mingw64/bin:$PATH"
+          export PKG_CONFIG_PATH="/mingw64/lib/pkgconfig"
+          export CPPFLAGS="-I/mingw64/include"
+          export LDFLAGS="-L/mingw64/lib"
+
+          ./configure \
+            --prefix="/mingw64" \
+            --disable-shared \
+            --enable-static \
+            --without-openmp \
+            --without-perl \
+            --without-python
+
+          make -j"$(nproc)"
+
+          RNA_ARCHIVE="$(find . -type f -name libRNA.a -print -quit)"
+
+          if [ -z "$RNA_ARCHIVE" ]; then
+            echo "Could not find libRNA.a after building ViennaRNA" >&2
+            find . -type f -name 'libRNA*' -print >&2
+            exit 1
+          fi
+
+          mkdir -p /mingw64/lib
+          cp "$RNA_ARCHIVE" /mingw64/lib/libRNA.a
+
+          ls -lah /mingw64/lib/libRNA.a
+
 
       - name: Show installed native libraries
         run: |
