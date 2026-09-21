@@ -187,7 +187,15 @@ jobs:
           ar x \
             "$GITHUB_WORKSPACE/vendor/RNAlib/prebuilt/x86_64-unknown-linux-gnu/libRNA.a"
 
-          file *.o | head -n 20
+          find . -maxdepth 1 -name '*.o' -print -quit | grep -q .
+
+          first_object="$(find . -maxdepth 1 -name '*.o' -print -quit)"
+
+          echo "Checking: $first_object"
+          file "$first_object"
+
+          file "$first_object" | grep -q 'ELF 64-bit.*x86-64'
+
 
       - name: Upload Linux native libraries
         uses: actions/upload-artifact@v4
