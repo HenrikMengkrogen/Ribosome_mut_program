@@ -131,10 +131,13 @@ jobs:
             --prefix="$PREFIX" \
             --disable-shared \
             --enable-static \
-            --without-openmp
+            --without-openmp \
+            --without-perl \
+            --without-python
 
           make -j"$(nproc)"
           make install
+
 
       - name: Collect Linux archives
         shell: bash
