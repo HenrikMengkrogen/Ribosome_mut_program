@@ -1,10 +1,8 @@
 ==== FINAL (run 3) ====
-sequence      : GCCAUCAGUCGCCCGUCCCAAGCCGGGAUAAAAUGGGAGGGGGCGGGAAACCGCCUAACCAUGCCGACUGAUGGCAGCUGCCAUCAGUCGGCGUGGACUGUAGAACACUGCCAAUGCCGGUCCCAAGCCCGGAUAAAAGUGGAGGGUACAGUCCACGCCACACUUCCUUCUUAAACAAGAAGGAACCGUGCGAGACGGUCGGGUCCAUAGCUAAUUCGUUAGUUAUGUCGAGUAGAGUGUGGGCUCGUACGGGGUGGUGAAGCCUCCACGCCACCCGGUGACCGCUACCAGCGACUGAAGGAGGCACGGUCGGCCAUCCGUUUCGACGGGUGGCGGCAAAGGGAGUGUCCUUUGCCCUGGUAGCGGA
-target        : (((((((((((...(((((.....)))))...((((....((((((....))))))..))))..)))))))))))...............((((((((((((...((((.......((((........)))).....)))).....))))))))))))(((((((((((((((()))))))))))(((((((((.(.((...(((((((((((((..))))))))))..)).)...))...).)))))))))(((((((..[[[[[[.))))))))))))(((((((((((((((((..]]]]]].))))))((((((((((..))))))))))((((((((((())))))))))))))))))))))
-mfe structure : (((((((((((...(((((.....)))))...((((....((((((....))))))..))))..)))))))))))...............((((((((((((...((((.......((((........)))).....)))).....))))))))))))(((..(((((((((....))))))))).((((((((.........(((((((((((....)))))))))..))............))))))))((((((((..[[[[[[.)))))))).))).((((((((((((((((..]]]]]].))))))(((((((((....)))))))))(((((((((....))))))))))))))))))).
-bp_distance   : 15
-mfe           : -152.00
-slices        : 20
-Ribosomal RNA used: true
-ribosome identity  : 22.4% (59 mismatched positions)
-ribosome mismatches: [158, 160, 161, 163, 164, 165, 166, 167, 168, 169, 171, 173, 174, 175, 176, 177, 178, 179, 181, 182, 183, 184, 275, 277, 278, 279, 280, 281, 282, 283, 284, 286, 287, 288, 289, 334, 335, 337, 338, 340, 341, 342, 344, 345, 346, 347, 348, 349, 350, 351, 352, 353, 354, 355, 359, 360, 364, 365, 366]
+sequence      : CCCCAGCCCGGGGCUUCGGCCCCGGGCCCGUGCGAGACGGUCGGGUCCAUAGCUAAUUCGUUAGUUAUGUCGAGUAGAGUGUGGGCUCGUACGGGGUGGUGAAGCCUCCACGCCACCUGGGGUCGGUGGUCGCCGGCCGCGACUGAAGGAGGCACGGUCGGCCAUCCGUUUCGACGGGUGGCCGCCGCGCGUUCGCGCGCGGCGCGGCCGGCGACCACCGA
+target        : ((((((((((((((....)))))))))(((((((((.(.((...((((((((((((....)))))))))..)).)...))...).)))))))))(((((((..[[[[[[.))))))))))))(((((((((((((((((((((((..]]]]]].))))))(((((((((....)))))))))(((((((((....))))))))))))))))))))))))))
+mfe structure : ((((.(((((((((....)))))))))(((((((((.........(((((((((((....)))))))))..))............)))))))))(((((((..[[[[[[.))))))).))))(((((((((((((((((((((((..]]]]]].)))))((((((((((....))))))))))((((((((....))))))))))))))))))))))))))
+bp_distance   : 9
+mfe           : -131.90
+slices        : 13
+Ribosomal RNA used: false

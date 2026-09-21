@@ -1,10 +1,8 @@
 ==== FINAL (run 3) ====
-sequence      : CUCUCCCAUUAAGAGGAAUUUUAAUGGCCGUGCGAGACGGUCGGGUCCAUAGCUAAUUCGUUAGUUAUGUCGAGUAGAGUGUGGGCUCGUACGGGGUGGUGAAGCCUCCACGCCACCGAGGGGAUUUUGCCUGCGACUGAAGGAGGCACGGUCGGCCAUCCGUUUCGACGGGUGGCGUAUUGCAUAAAAAUGCGAUACCGGGCAAAAUC
-target        : (((((((((((((((()))))))))))(((((((((.(.((...(((((((((((((..))))))))))..)).)...))...).)))))))))(((((((..[[[[[[.))))))))))))(((((((((((((((((..]]]]]].))))))((((((((((..))))))))))((((((((((())))))))))))))))))))))
-mfe structure : ((((((((((((((....)))))))))(((((((((.........(((((((((((....)))))))))..))............)))))))))(((((((..[[[[[[.))))))))))))(((((((((((((((((..]]]]]].))))))(((((((((....)))))))))(((((((((....))))))))))))))))))))
-bp_distance   : 10
-mfe           : -77.30
+sequence      : CGAUGGGUGGCCGGGGCUUCGGCCCCGGCCCCGUGCGAGACGGUCGGGUCCAUAGCUAAUUCGUUAGUUAUGUCGAGUAGAGUGUGGGCUCGUACGGGGUGGUGAAGCCUCCACGCCACCACCCAUCGGGCACGCGAGCCCGCGACUGAAGGAGGCACGGUCGGCCAUCCGUUUCGACGGGUGGCCGCGCGGGCUUCGGCCCGCGCGCGGGCUCGCGUGCC
+target        : (((((((((((((((((....)))))))))(((((((((.(.((...((((((((((((....)))))))))..)).)...))...).)))))))))(((((((..[[[[[[.)))))))))))))))((((((((((((((((((((..]]]]]].))))))(((((((((....)))))))))(((((((((....)))))))))))))))))))))))
+mfe structure : (((((((.(((((((((....)))))))))(((((((((.........(((((((((((....)))))))))..))............)))))))))(((((((..[[[[[[.))))))).)))))))((((((((((((((((((((..]]]]]].)))))((((((((((....))))))))))((((((((....)))))))))))))))))))))))
+bp_distance   : 9
+mfe           : -129.60
 slices        : 13
-Ribosomal RNA used: true
-ribosome identity  : 27.6% (55 mismatched positions)
-ribosome mismatches: [0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 16, 17, 18, 19, 20, 21, 22, 23, 117, 119, 123, 124, 125, 126, 127, 128, 130, 131, 132, 177, 178, 179, 180, 181, 183, 184, 185, 186, 187, 188, 190, 191, 192, 195, 198, 199, 200, 201, 202, 204, 205, 207]
+Ribosomal RNA used: false
