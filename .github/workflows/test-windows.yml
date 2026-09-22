@@ -81,9 +81,10 @@ jobs:
             --without-swig \
             --without-svm
 
-          # Make the legacy declarations in lists.h match the definitions in
-          # lists.c. ViennaRNA 2.7.0 uses formatting that differs by release,
-          # so replace each complete declaration rather than matching details.
+          
+          # ViennaRNA 2.7.0 declares generic callbacks with empty parameter
+          # lists in lists.h, but lists.c defines them with pointer arguments.
+          # Update just those callback types to match lists.c.
           python - <<'PY'
           from pathlib import Path
           import re
@@ -92,25 +93,23 @@ jobs:
           text = path.read_text()
 
           text, kill_count = re.subn(
-              r"void\s+lst_kill\s*$[^;]*$;",
-              "void lst_kill (LIST * l, void (*freeNode)(void *));",
+              r"void\s*$\s*\*\s*freeNode\s*$\s*$\s*$",
+              "void (*freeNode)(void *)",
               text,
               count=1,
-              flags=re.DOTALL,
           )
 
           text, sort_count = re.subn(
-              r"void\s+lst_mergesort\s*$[^;]*$;",
-              "void lst_mergesort (LIST * l, int (*cmp_func)(void *, void *));",
+              r"int\s*$\s*\*\s*cmp_func\s*$\s*$\s*$",
+              "int (*cmp_func)(void *, void *)",
               text,
               count=1,
-              flags=re.DOTALL,
           )
 
           if kill_count != 1 or sort_count != 1:
               raise SystemExit(
-                  f"Could not patch lists.h: "
-                  f"lst_kill={kill_count}, lst_mergesort={sort_count}"
+                  f"Could not patch callback types in lists.h: "
+                  f"freeNode={kill_count}, cmp_func={sort_count}"
               )
 
           path.write_text(text)
