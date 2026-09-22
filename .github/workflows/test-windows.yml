@@ -134,8 +134,14 @@ jobs:
         run: |
           set -euxo pipefail
 
-          export PATH="/mingw64/bin:$PATH"
-          export LIBCLANG_PATH="/mingw64/bin"
+          export PATH="/c/Users/runneradmin/.cargo/bin:/mingw64/bin:$PATH"
 
+          # Optional diagnostics
+          command -v cargo
+          cargo --version
+          rustc --version
+
+          export LIBCLANG_PATH=/mingw64/bin
           cargo test --target x86_64-pc-windows-gnu
+
 
