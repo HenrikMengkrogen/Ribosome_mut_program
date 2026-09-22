@@ -85,7 +85,7 @@ jobs:
           # Required by ViennaRNA's bundled dlib code on Windows.
           export LDFLAGS="-fno-lto -L/mingw64/lib -lws2_32 -lwinmm"
 
-          ./configure \
+            ./configure \
             --prefix="/mingw64" \
             --disable-shared \
             --enable-static \
@@ -93,8 +93,30 @@ jobs:
             --without-swig \
             --without-svm
 
+          # RNAforester uses an identifier named `eof`, which conflicts with
+          # MinGW's eof(int) declaration from <io.h>. Rename it locally.
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path("src/RNAforester/src/anchors/anchors.cpp")
+          text = path.read_text()
+
+          # Rename standalone occurrences only; do not modify larger words.
+          updated, count = re.subn(r"\beof\b", "anchors_eof", text)
+
+          if count == 0:
+              raise SystemExit(
+                  "Could not find eof identifier in RNAforester anchors.cpp"
+              )
+
+          path.write_text(updated)
+          print(f"Renamed {count} eof occurrence(s) in {path}")
+          PY
+
           # ViennaRNA 2.7.0 is safest when built sequentially on MinGW.
           make -j1
+
 
 
 
