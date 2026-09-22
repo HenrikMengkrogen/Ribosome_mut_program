@@ -73,7 +73,7 @@ jobs:
           export CFLAGS="-Wno-error=incompatible-pointer-types"
           export LDFLAGS="-L/mingw64/lib"
 
-          ./configure \
+            ./configure \
             --prefix="/mingw64" \
             --disable-shared \
             --enable-static \
@@ -81,14 +81,13 @@ jobs:
             --without-swig \
             --without-svm
 
-          
-          # Print the exact declarations before attempting a patch.
-          # This lets us see the actual formatting used in lists.h.
+          # Show the exact callback declarations before patching.
           echo "----- lists.h callback declarations before patch -----"
           grep -n -A2 -B2 -E 'lst_kill|lst_mergesort|freeNode|cmp_func' \
             src/ViennaRNA/datastructures/lists.h || true
 
-          # Patch the declarations in lists.h to match lists.c.
+          # ViennaRNA 2.7.0 has declarations in lists.h that disagree with
+          # the definitions in lists.c under current MinGW GCC.
           python - <<'PY'
           from pathlib import Path
 
@@ -113,10 +112,30 @@ jobs:
           grep -n -A2 -B2 -E 'lst_kill|lst_mergesort|freeNode|cmp_func' \
             src/ViennaRNA/datastructures/lists.h || true
 
+          # Diagnose generated/internal headers before compiling. Do not add
+          # "|| true" to the actual make command below.
+          echo "----- Looking for ViennaRNA internal headers -----"
+          find src \
+            -type f \
+            $ \
+              -name 'fold_vars.h' \
+              -o -name 'fold_vars.h.in' \
+              -o -name 'color_output.h' \
+              -o -name 'color_output.h.in' \
+            $ \
+            -print || true
 
-          # Build sequentially because generated headers may race under a
-          # parallel MinGW/MSYS2 build.
-          make
+          echo "----- color_output references -----"
+          grep -R -n "color_output" src/ViennaRNA 2>/dev/null | head -50 || true
+
+          echo "----- fold_vars references -----"
+          grep -R -n "fold_vars" src/ViennaRNA 2>/dev/null | head -50 || true
+
+          # Build sequentially: ViennaRNA 2.7.0 has generated-header races
+          # under parallel MinGW/MSYS2 builds.
+          make -j1
+
+
 
 
 
