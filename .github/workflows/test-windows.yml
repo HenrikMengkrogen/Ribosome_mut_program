@@ -71,11 +71,19 @@ jobs:
 
           # Force legacy C semantics required by ViennaRNA 2.7.0 and its
           # bundled RNAforester/g2 sources.
+          
+          export PATH="/mingw64/bin:$PATH"
+          export PKG_CONFIG_PATH="/mingw64/lib/pkgconfig"
+
           export CC=gcc
           export CXX=g++
+
+          # Use pre-C23 C semantics required by old ViennaRNA/RNAforester code.
           export CPPFLAGS="-I$PWD/src -I/mingw64/include"
           export CFLAGS="-std=gnu17 -fno-lto"
           export CXXFLAGS="-fno-lto -include cstdint"
+
+          # Required by ViennaRNA's bundled dlib code on Windows.
           export LDFLAGS="-fno-lto -L/mingw64/lib -lws2_32 -lwinmm"
 
           ./configure \
@@ -86,61 +94,10 @@ jobs:
             --without-swig \
             --without-svm
 
-
-
-          # Show the exact callback declarations before patching.
-          echo "----- lists.h callback declarations before patch -----"
-          grep -n -A2 -B2 -E 'lst_kill|lst_mergesort|freeNode|cmp_func' \
-            src/ViennaRNA/datastructures/lists.h || true
-
-          # ViennaRNA 2.7.0 has declarations in lists.h that disagree with
-          # the definitions in lists.c under current MinGW GCC.
-          python - <<'PY'
-          from pathlib import Path
-
-          path = Path("src/ViennaRNA/datastructures/lists.h")
-          text = path.read_text()
-
-          replacements = {
-              "void (*freeNode) ()": "void (*freeNode)(void *)",
-              "int (*cmp_func) ()": "int (*cmp_func)(void *, void *)",
-          }
-
-          for old, new in replacements.items():
-              if old not in text:
-                  print(f"Did not find exact text: {old!r}")
-              else:
-                  text = text.replace(old, new, 1)
-
-          path.write_text(text)
-          PY
-
-          echo "----- lists.h callback declarations after patch -----"
-          grep -n -A2 -B2 -E 'lst_kill|lst_mergesort|freeNode|cmp_func' \
-            src/ViennaRNA/datastructures/lists.h || true
-
-          # Diagnose generated/internal headers before compiling. Do not add
-          # "|| true" to the actual make command below.
-          echo "----- Looking for ViennaRNA internal headers -----"
-          find src \
-            -type f \
-            $ \
-              -name 'fold_vars.h' \
-              -o -name 'fold_vars.h.in' \
-              -o -name 'color_output.h' \
-              -o -name 'color_output.h.in' \
-            $ \
-            -print || true
-
-          echo "----- color_output references -----"
-          grep -R -n "color_output" src/ViennaRNA 2>/dev/null | head -50 || true
-
-          echo "----- fold_vars references -----"
-          grep -R -n "fold_vars" src/ViennaRNA 2>/dev/null | head -50 || true
-
-          # Build sequentially: ViennaRNA 2.7.0 has generated-header races
-          # under parallel MinGW/MSYS2 builds.
+          # ViennaRNA 2.7.0 is safest when built sequentially on MinGW.
           make -j1
+
+
 
 
 
