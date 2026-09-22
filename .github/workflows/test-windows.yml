@@ -69,13 +69,16 @@ jobs:
           export PATH="/mingw64/bin:$PATH"
           export PKG_CONFIG_PATH="/mingw64/lib/pkgconfig"
 
-          # ViennaRNA sources include headers as "ViennaRNA/...".
+          # ViennaRNA sources include internal headers as "ViennaRNA/...".
           export CPPFLAGS="-I$PWD/src -I/mingw64/include"
 
-          # Avoid GCC LTO object/archive incompatibilities on current MinGW.
+          # Avoid GCC LTO archive incompatibilities on current MinGW.
           export CFLAGS="-fno-lto -Wno-error=incompatible-pointer-types"
           export CXXFLAGS="-fno-lto -include cstdint"
-          export LDFLAGS="-fno-lto -L/mingw64/lib"
+
+          # dlib, bundled by ViennaRNA, requires Winsock and WinMM on Windows.
+          export LDFLAGS="-fno-lto -L/mingw64/lib -lws2_32 -lwinmm"
+
 
           ./configure \
             --prefix="/mingw64" \
