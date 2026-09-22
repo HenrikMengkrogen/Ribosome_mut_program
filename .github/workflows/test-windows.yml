@@ -82,42 +82,37 @@ jobs:
             --without-svm
 
           
-          # ViennaRNA 2.7.0 declares generic callbacks with empty parameter
-          # lists in lists.h, but lists.c defines them with pointer arguments.
-          # Update just those callback types to match lists.c.
+          # Print the exact declarations before attempting a patch.
+          # This lets us see the actual formatting used in lists.h.
+          echo "----- lists.h callback declarations before patch -----"
+          grep -n -A2 -B2 -E 'lst_kill|lst_mergesort|freeNode|cmp_func' \
+            src/ViennaRNA/datastructures/lists.h || true
+
+          # Patch the declarations in lists.h to match lists.c.
           python - <<'PY'
           from pathlib import Path
-          import re
 
           path = Path("src/ViennaRNA/datastructures/lists.h")
           text = path.read_text()
 
-          text, kill_count = re.subn(
-              r"void\s*$\s*\*\s*freeNode\s*$\s*$\s*$",
-              "void (*freeNode)(void *)",
-              text,
-              count=1,
-          )
+          replacements = {
+              "void (*freeNode) ()": "void (*freeNode)(void *)",
+              "int (*cmp_func) ()": "int (*cmp_func)(void *, void *)",
+          }
 
-          text, sort_count = re.subn(
-              r"int\s*$\s*\*\s*cmp_func\s*$\s*$\s*$",
-              "int (*cmp_func)(void *, void *)",
-              text,
-              count=1,
-          )
-
-          if kill_count != 1 or sort_count != 1:
-              raise SystemExit(
-                  f"Could not patch callback types in lists.h: "
-                  f"freeNode={kill_count}, cmp_func={sort_count}"
-              )
+          for old, new in replacements.items():
+              if old not in text:
+                  print(f"Did not find exact text: {old!r}")
+              else:
+                  text = text.replace(old, new, 1)
 
           path.write_text(text)
           PY
 
-          # Confirm that the patch happened before compiling.
-          grep -nE 'lst_kill|lst_mergesort' \
-            src/ViennaRNA/datastructures/lists.h
+          echo "----- lists.h callback declarations after patch -----"
+          grep -n -A2 -B2 -E 'lst_kill|lst_mergesort|freeNode|cmp_func' \
+            src/ViennaRNA/datastructures/lists.h || true
+
 
           # Build sequentially because generated headers may race under a
           # parallel MinGW/MSYS2 build.
