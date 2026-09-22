@@ -66,65 +66,33 @@ jobs:
           tar -xf ViennaRNA-2.7.0.tar.gz
           cd ViennaRNA-2.7.0
 
-          export PATH="/mingw64/bin:$PATH"
-          export PKG_CONFIG_PATH="/mingw64/lib/pkgconfig"
-
-          # Force legacy C semantics required by ViennaRNA 2.7.0 and its
-          # bundled RNAforester/g2 sources.
-          
-          export PATH="/mingw64/bin:$PATH"
+                    export PATH="/mingw64/bin:$PATH"
           export PKG_CONFIG_PATH="/mingw64/lib/pkgconfig"
 
           export CC=gcc
           export CXX=g++
 
-          # Use pre-C23 C semantics required by old ViennaRNA/RNAforester code.
           export CPPFLAGS="-I$PWD/src -I/mingw64/include"
+
+          # Old ViennaRNA C code needs pre-C23 empty-parameter-list behavior.
           export CFLAGS="-std=gnu17 -fno-lto"
+
+          # ViennaRNA configuration checks require C++17.
           export CXXFLAGS="-std=gnu++17 -fno-lto -include cstdint"
-          # Required by ViennaRNA's bundled dlib code on Windows.
+
+          # Required when ViennaRNA links bundled dlib-based components.
           export LDFLAGS="-fno-lto -L/mingw64/lib -lws2_32 -lwinmm"
 
-            ./configure \
+          ./configure \
             --prefix="/mingw64" \
             --disable-shared \
             --enable-static \
             --without-openmp \
             --without-swig \
-            --without-svm
+            --without-svm \
+            --without-forester
 
-          # RNAforester uses an identifier named `eof`, which conflicts with
-          # MinGW's eof(int) declaration from <io.h>. Rename it locally.
-          python - <<'PY'
-          from pathlib import Path
-          import re
-
-          path = Path("src/RNAforester/src/anchors/anchors.cpp")
-          text = path.read_text()
-
-          # Rename standalone occurrences only; do not modify larger words.
-          updated, count = re.subn(r"\beof\b", "anchors_eof", text)
-
-          if count == 0:
-              raise SystemExit(
-                  "Could not find eof identifier in RNAforester anchors.cpp"
-              )
-
-          path.write_text(updated)
-          print(f"Renamed {count} eof occurrence(s) in {path}")
-          PY
-
-          # ViennaRNA 2.7.0 is safest when built sequentially on MinGW.
           make -j1
-
-
-
-
-
-
-
-
-
 
 
           RNA_ARCHIVE="$(find . -type f -name libRNA.a -print -quit)"

@@ -137,10 +137,17 @@ fn main() {
         }
 
         "windows" => {
-            panic!(
-                "Windows support has not been configured yet. \
-                 Add Windows/MSVC ViennaRNA archives and use their .lib names."
-            );
+            // MinGW/gnu target: same static-archive (.a) linking as macOS/Linux,
+            // not MSVC .lib files, since TARGET is x86_64-pc-windows-gnu.
+            //
+            // libRNA.a references Winsock and multimedia-timer symbols
+            // (closesocket, WSAGetLastError, timeGetTime, ...) that aren't
+            // pulled in by Rust's default -pc-windows-gnu link set, so they
+            // must be linked explicitly. Order matters: these resolve
+            // symbols from libRNA.a above, so they must come after it,
+            // which they do since this match runs after that loop.
+            println!("cargo:rustc-link-lib=ws2_32");
+            println!("cargo:rustc-link-lib=winmm");
         }
 
         other => panic!("Unsupported target OS `{other}`"),
