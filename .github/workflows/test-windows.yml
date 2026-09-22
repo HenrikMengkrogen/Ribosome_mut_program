@@ -81,8 +81,7 @@ jobs:
           # Use pre-C23 C semantics required by old ViennaRNA/RNAforester code.
           export CPPFLAGS="-I$PWD/src -I/mingw64/include"
           export CFLAGS="-std=gnu17 -fno-lto"
-          export CXXFLAGS="-fno-lto -include cstdint"
-
+          export CXXFLAGS="-std=gnu++11 -fno-lto -include cstdint"
           # Required by ViennaRNA's bundled dlib code on Windows.
           export LDFLAGS="-fno-lto -L/mingw64/lib -lws2_32 -lwinmm"
 
