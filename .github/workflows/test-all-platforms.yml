@@ -29,10 +29,12 @@ jobs:
             os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
 
-          # 64-bit Windows using the MSVC ABI
-          - name: Windows x86_64 MSVC
+          # 64-bit Windows using the MinGW/GNU ABI.
+          # ViennaRNA is built as MinGW static .a archives.
+          - name: Windows x86_64 GNU
             os: windows-latest
-            target: x86_64-pc-windows-msvc
+            target: x86_64-pc-windows-gnu
+
 
     steps:
       - name: Check out repository
