@@ -9,9 +9,12 @@ use rand::RngExt;
 use rand::seq::IndexedRandom;
 use rayon::prelude::*;
 use std::fs::{self, File};
-use std::io::Write;
+use std::io::{self, Write};
 use std::os::raw::c_void;
 use std::path::{PathBuf, Path};
+
+
+
 
 
 const RIBOSOMAL_RNA: bool = false;
@@ -19,10 +22,33 @@ const RIBOSOMAL_RNA: bool = false;
 const RIBOSOME_SEQUENCE: &str = "GGUUAAGCGACUAAGCGUACACGGUGGAUGCCCUGGCAGUCAGAGGCGAUGAAGGACGUGCUAAUCUGCGAUAAGCGUCGGUAAGGUGAUAUGAACCGUUAUAACCGGCGAUUUCCGAAUGGGGAAACCCAGUGUGUUUCGACACACUAUCAUUAACUGAAUCCAUAGGUUAAUGAGGCGAACCGGGGGAACUGAAACAUCUAAGUACCCCGAGGAAAAGAAAUCAACCGAGAUUCCCCCAGUAGCGGCGAGCGAACGGGGAGCAGCCCAGAGCCUGAAUCAGUGUGUGUGUUAGUGGAAGCGUCUGGAAAGGCGCGCGAUACAGGGUGACAGCCCCGUACACAAAAAUGCACAUGCUGUGAGCUCGAUGAGUAGGGCGGGACACGUGGUAUCCUGUCUGAAUAUGGGGGGACCAUCCUCCAAGGCUAAAUACUCCUGACUGACCGAUAGUGAACCAGUACCGUGAGGGAAAGGCGAAAAGAACCCCGGCGAGGGGAGUGAAAAAGAACCUGAAACCGUGUACGUACAAGCAGUGGGAGCACGCUUAGGCGUGUGACUGCGUACCUUUUGUAUAAUGGGUCAGCGACUUAUAUUCUGUAGCAAGGUUAACCGAAUAGGGGAGCCGAAGGGAAACCGAGUCUUAACUGGGCGUUAAGUUGCAGGGUAUAGACCCGAAACCCGGUGAUCUAGCCAUGGGCAGGUUGAAGGUUGGGUAACACUAACUGGAGGACCGAACCGACUAAUGUUGAAAAAUUAGCGGAUGACUUGUGGCUGGGGGUGAAAGGCCAAUCAAACCGGGAGAUAGCUGGUUCUCCCCGAAAGCUAUUUAGGUAGCGCCUCGUGAAUUCAUCUCCGGGGGUAGAGCACUGUUUCGGCAAGGGGGUCAUCCCGACUUACCAACCCGAUGCAAACUGCGAAUACCGGAGAAUGUUAUCACGGGAGACACACGGCGGGUGCUAACGUCCGUCGUGAAGAGGGAAACAACCCAGACCGCCAGCUAAGGUCCCAAAGUCAUGGUUAAGUGGGAAACGAUGUGGGAAGGCCCAGACAGCCAGGAUGUUGGCUUAGAAGCAGCCAUCAUUUAAAGAAAGCGUAAUAGCUCACUGGUCGAGUCGGCCUGCGCGGAAGAUGUAACGGGGCUAAACCAUGCACCGAAGCUGCGGCAGCGACGCUUAUGCGUUGUUGGGUAGGGGAGCGUUCUGUAAGCCUGCGAAGGUGUGCUGUGAGGCAUGCUGGAGGUAUCAGAAGUGCGAAUGCUGACAUAAGUAACGAUAAAGCGGGUGAAAAGCCCGCUCGCCGGAAGACCAAGGGUUCCUGUCCAACGUUAAUCGGGGCAGGGUGAGUCGACCCCUAAGGCGAGGCCGAAAGGCGUAGUCGAUGGGAAACAGGUUAAUAUUCCUGUACUUGGUGUUACUGCGAAGGGGGGACGGAGAAGGCUAUGUUGGCCGGGCGACGGUUGUCCCGGUUUAAGCGUGUAGGCUGGUUUUCCAGGCAAAUCCGGAAAAUCAAGGCUGAGGCGUGAUGACGAGGCACUACGGUGCUGAAGCAACAAAUGCCCUGCUUCCAGGAAAAGCCUCUAAGCAUCAGGUAACAUCAAAUCGUACCCCAAACCGACACAGGUGGUCAGGUAGAGAAUACCAAGGCGCUUGAGAGAACUCGGGUGAAGGAACUAGGCAAAAUGGUGCCGUAACUUCGGGAGAAGGCACGCUGAUAUGUAGGUGAGGUCCCUCGCGGAUGGAGCUGAAAUCAGUCGAAGAUACCAGCUGGCUGCAACUGUUUAUUAAAAACACAGCACUGUGCAAACACGAAAGUGGACGUAUACGGUGUGACGCCUGCCCGGUGCCGGAAGGUUAAUUGAUGGGGUUAGCGCAAGCGAAGCUCUUGAUCGAAGCCCCGGUAAACGGCGGCCGUAACUAUAACGGUCCUAAGGUAGCGAAAUUCCUUGUCGGGUAAGUUCCGACCUGCACGAAUGGCGUAAUGAUGGCCAGGCUGUCUCCACCCGAGACUCAGUGAAAUUGAACUCGCUGUGAAGAUGCAGUGUACCCGCGGCAAGACGGAAAGACCCCGUGAACCUUUACUAUAGCUUGACACUGAACAUUGAGCCUUGAUGUGUAGGAUAGGUGGGAGGCUUUGAAGUGUGGACGCCAGUCUGCAUGGAGCCGACCUUGAAAUACCACCCUUUAAUGUUUGAUGUUCUAACGUUGACCCGUAAUCCGGGUUGCGGACAGUGUCUGGUGGGUAGUUUGACUGGGGCGGUCUCCUCCUAAAGAGUAACGGAGGAGCACGAAGGUUGGCUAAUCCUGGUCGGACAUCAGGAGGUUAGUGCAAUGGCAUAAGCCAGCUUGACUGCGAGCGUGACGGCGCGAGCAGGUGCGAAAGCAGGUCAUAGUGAUCCGGUGGUUCUGAAUGGAAGGGCCAUCGCUCAACGGAUAAAAGGUACUCCGGGGAUAACAGGCUGAUACCGCCCAAGAGUUCAUAUCGACGGCGGUGUUUGGCACCUCGAUGUCGGCUCAUCACAUCCUGGGGCUGAAGUAGGUCCCAAGGGUAUGGCUGUUCGCCAUUUAAAGUGGUACGCGAGCUGGGUUUAGAACGUCGUGAGACAGUUCGGUCCCUAUCUGCCGUGGGCGCUGGAGAACUGAGGGGGGCUGCUCCUAGUACGAGAGGACCGGAGUGGACGCAUCACUGGUGUUCGGGUUGUCAUGCCAAUGGCACUGCCCGGUAGCUAAAUGCGGAAGAGAUAAGUGCUGAAAGCAUCUAAGCACGAAACUUGCCCCGAGAUGAGUUCUCCCUGACCCUUUAAGGGUCCUGAAGGAACGUUGAAGACGACGACGUUGAUAGGCCGGGUGUGUAAGCGCAGCGAUGCGUUGAGCUAACCGGUACUAAUGAACCGUGAGGCUUAACCU";
 
 fn main() {
-    const N_STARTS: i64 = 5;
+    const DEFAULT_N_RUNS: usize = 3;
+    const DEFAULT_N_STARTS: i64 = 5;
     const MAX_STEPS: i64 = 2_100;
     const WOBBLE_FREQUENCY: f64 = 0.0;
-    const N_RUNS: usize = 3; // Overall times the script should run
+
+    println!("========================================");
+    println!("RNA design configuration");
+    println!("Press Enter to accept a default value.");
+    println!("========================================");
+
+    let n_runs = ask_positive_usize(
+        "How many complete runs should be performed?",
+        DEFAULT_N_RUNS,
+    );
+
+    let n_starts = ask_positive_i64(
+        "How many hill-climbing starts per run?",
+        DEFAULT_N_STARTS,
+    );
+
+    println!(
+        "\nConfiguration selected: N_RUNS={}, N_STARTS={}, MAX_STEPS={}\n",
+        n_runs,
+        n_starts,
+        MAX_STEPS
+    );
+
 
     unsafe {
         let mut md: vrna_md_t = std::mem::zeroed();
@@ -100,9 +126,9 @@ fn main() {
 
         println!("Output base directory: {}", output_base.display());
 
-    for run in 1..=N_RUNS {
+    for run in 1..=n_runs {
         println!("\n########################################");
-        println!("RUN {} of {}", run, N_RUNS);
+        println!("RUN {} of {}", run, n_runs);
         println!("########################################");
 
         // ../misc/output/run_N
@@ -151,7 +177,7 @@ fn main() {
                         &get_pair_map(&target_structure),
                     ),
                     &target_structure,
-                    N_STARTS,
+                    n_starts,
                     MAX_STEPS,
                     WOBBLE_FREQUENCY,
                     Some(&ribo_positions),
@@ -160,7 +186,7 @@ fn main() {
                 decomposed_hill_climb_design(
                     &mutate_ks(&seq, &get_pair_map(&target_structure)),
                     &target_structure,
-                    N_STARTS,
+                    n_starts,
                     MAX_STEPS,
                     WOBBLE_FREQUENCY,
                     None,
@@ -2324,3 +2350,56 @@ fn ribosome_similarity(seq_in: &str, n_positions: &[usize]) -> RibosomeSimilarit
         mismatched_positions,
     }
 }
+
+fn ask_positive_usize(prompt: &str, default: usize) -> usize {
+    loop {
+        print!("{prompt} [{default}]: ");
+        io::stdout().flush().expect("Failed to flush terminal output");
+
+        let mut input = String::new();
+        io::stdin()
+            .read_line(&mut input)
+            .expect("Failed to read terminal input");
+
+        let input = input.trim();
+
+        // Pressing Enter accepts the default.
+        if input.is_empty() {
+            return default;
+        }
+
+        match input.parse::<usize>() {
+            Ok(value) if value > 0 => return value,
+            _ => {
+                println!("Please enter a positive whole number.");
+            }
+        }
+    }
+}
+
+fn ask_positive_i64(prompt: &str, default: i64) -> i64 {
+    loop {
+        print!("{prompt} [{default}]: ");
+        io::stdout().flush().expect("Failed to flush terminal output");
+
+        let mut input = String::new();
+        io::stdin()
+            .read_line(&mut input)
+            .expect("Failed to read terminal input");
+
+        let input = input.trim();
+
+        // Pressing Enter accepts the default.
+        if input.is_empty() {
+            return default;
+        }
+
+        match input.parse::<i64>() {
+            Ok(value) if value > 0 => return value,
+            _ => {
+                println!("Please enter a positive whole number.");
+            }
+        }
+    }
+}
+
