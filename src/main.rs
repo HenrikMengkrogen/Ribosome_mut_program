@@ -11,7 +11,8 @@ use rayon::prelude::*;
 use std::fs::{self, File};
 use std::io::Write;
 use std::os::raw::c_void;
-use std::path::Path;
+use std::path::{PathBuf, Path};
+
 
 const RIBOSOMAL_RNA: bool = false;
 // RIBOSOMA_SEQUENCE can be changed to any start sequence of desire. If it is longer than the structure the sequence will be sliced accordingly.
@@ -38,37 +39,66 @@ fn main() {
 
     //Imports file here -> Note that they have to be formatted with both Sequence and Structure. Files need to be named "input_*.txt"
 
-    let input_dir = match fs::read_dir("misc") {
-        Ok(entries) => entries,
-        Err(error) if error.kind() == std::io::ErrorKind::NotFound => fs::read_dir("../misc")
-            .expect("Could not find a misc directory at either ./misc or ../misc"),
-        Err(error) => {
-            panic!("Failed to read ./misc: {error}");
+    let input_root: PathBuf = if Path::new("misc").is_dir() {
+            PathBuf::from("misc")
+        } else if Path::new("../misc").is_dir() {
+            PathBuf::from("../misc")
+        } else {
+            panic!(
+                "Could not find a misc directory. Looked in:\n\
+                - {}\n\
+                - {}",
+                Path::new("misc").display(),
+                Path::new("../misc").display(),
+            );
+        };
+
+        println!(
+            "Current working directory: {}",
+            std::env::current_dir()
+                .expect("could not determine current directory")
+                .display()
+        );
+
+        println!("Input directory: {}", input_root.display());
+
+        let input_dir = fs::read_dir(&input_root)
+            .unwrap_or_else(|e| panic!("Failed to read {}: {e}", input_root.display()));
+
+        let mut input_files: Vec<PathBuf> = input_dir
+            .filter_map(|entry| {
+                let path = entry.ok()?.path();
+
+                let is_input_file = path.is_file()
+                    && path.file_name()?.to_str()?.starts_with("input_")
+                    && path.extension()?.to_str()? == "txt";
+
+                is_input_file.then_some(path)
+            })
+            .collect();
+
+        input_files.sort();
+
+        println!("Found {} input files.", input_files.len());
+
+        if input_files.is_empty() {
+            eprintln!(
+                "No files matching input_*.txt were found in {}",
+                input_root.display()
+            );
         }
-    };
 
-    let mut input_files: Vec<_> = input_dir
-        .filter_map(|entry| {
-            let path = entry.ok()?.path();
+       
+        let output_base = input_root.join("output");
 
-            if path.is_file()
-                && path.file_name()?.to_str()?.starts_with("input_")
-                && path.extension()?.to_str()? == "txt"
-            {
-                Some(path)
-            } else {
-                None
-            }
-        })
-        .collect();
+        fs::create_dir_all(&output_base).unwrap_or_else(|e| {
+            panic!(
+                "Could not create output directory {}: {e}",
+                output_base.display()
+            )
+        });
 
-    input_files.sort();
-
-    println!("Found {} input files.", input_files.len());
-
-    // Base output directory: ../misc/output
-    let output_base = Path::new("../misc").join("output");
-    fs::create_dir_all(&output_base).expect("failed to create ../misc/output directory");
+        println!("Output base directory: {}", output_base.display());
 
     for run in 1..=N_RUNS {
         println!("\n########################################");
