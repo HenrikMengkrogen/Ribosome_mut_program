@@ -1,8 +1,8 @@
 ==== FINAL (run 3) ====
-sequence      : AUGCAGCCCCCCGGGGCCGUUCGCGGCCCCGGCCGUGCGAGACGGUCGGGUCCAUAGCUAAUUCGUUAGUUAUGUCGAGUAGAGUGUGGGCUCGUACGGGGUGGUGAAGCCUCCACGCCACCGGGGCUGCAUCCUCCACCCGAGCGACUGAAGGAGGCACGGUCGGCCAUCCGUUUCGACGGGUGGCGCCGGCGGGUUCGCCCGCCGGCCUCGGGUGGAGG
-target        : (((((((((((((((((((....)))))))))(((((((((.(.((...((((((((((((....)))))))))..)).)...))...).)))))))))(((((((..[[[[[[.)))))))))))))))))((((((((((((((((((..]]]]]].))))))(((((((((....)))))))))(((((((((....)))))))))))))))))))))
-mfe structure : (((((((((((((((((((....)))))))))(((((((((.........(((((((((((....)))))))))..))............)))))))))(((((((..[[[[[[.)))))))))))))))))((((((((((((((((((..]]]]]].))))))(((((((((....)))))))))(((((((((....)))))))))))))))))))))
-bp_distance   : 4
-mfe           : -126.40
-slices        : 13
+sequence      : CGGGAGCGCCCUGAGGCCCGGCGGGCGGUGGCGCCCCGGGGUUCGCCCCGGGGCCCGUGCGAGACGGCCGGGUCCAUAGCUAAUUCGUUAGUUAUGUCGAGCAGAGCGUGGGCUCGUACGGGGUGGUGAAGCCUCCACGCCACCGCCACCGCCCGCCGGGCCUCAGCGACUGAAGGAGGCACGGUCGGCCAUCCGUUUCGACGGGUGGCGGCGCUCCCG
+target        : (((((((((((((((((((((((((((((((((((((((((....)))))))))(((((((((.(.((...((((((((((((....)))))))))..)).)...))...).)))))))))(((((((..[[[[[[.)))))))))))))))))))))))))))))((((((..]]]]]].))))))(((((((((....)))))))))))))))))))
+mfe structure : (((((((((((((((((((((((((((((((((((((((((....)))))))))(((((((((.(.((...((((((((((((....)))))))))..)).)...))...).)))))))))(((((((..[[[[[[.)))))))))))))))))))))))))))))((((((..]]]]]].))))))(((((((((....)))))))))))))))))))
+bp_distance   : 0
+mfe           : -143.80
+slices        : 12
 Ribosomal RNA used: false

@@ -20,13 +20,14 @@ use std::path::{PathBuf, Path};
 const RIBOSOMAL_RNA: bool = false;
 // RIBOSOMA_SEQUENCE can be changed to any start sequence of desire. If it is longer than the structure the sequence will be sliced accordingly.
 const RIBOSOME_SEQUENCE: &str = "GGUUAAGCGACUAAGCGUACACGGUGGAUGCCCUGGCAGUCAGAGGCGAUGAAGGACGUGCUAAUCUGCGAUAAGCGUCGGUAAGGUGAUAUGAACCGUUAUAACCGGCGAUUUCCGAAUGGGGAAACCCAGUGUGUUUCGACACACUAUCAUUAACUGAAUCCAUAGGUUAAUGAGGCGAACCGGGGGAACUGAAACAUCUAAGUACCCCGAGGAAAAGAAAUCAACCGAGAUUCCCCCAGUAGCGGCGAGCGAACGGGGAGCAGCCCAGAGCCUGAAUCAGUGUGUGUGUUAGUGGAAGCGUCUGGAAAGGCGCGCGAUACAGGGUGACAGCCCCGUACACAAAAAUGCACAUGCUGUGAGCUCGAUGAGUAGGGCGGGACACGUGGUAUCCUGUCUGAAUAUGGGGGGACCAUCCUCCAAGGCUAAAUACUCCUGACUGACCGAUAGUGAACCAGUACCGUGAGGGAAAGGCGAAAAGAACCCCGGCGAGGGGAGUGAAAAAGAACCUGAAACCGUGUACGUACAAGCAGUGGGAGCACGCUUAGGCGUGUGACUGCGUACCUUUUGUAUAAUGGGUCAGCGACUUAUAUUCUGUAGCAAGGUUAACCGAAUAGGGGAGCCGAAGGGAAACCGAGUCUUAACUGGGCGUUAAGUUGCAGGGUAUAGACCCGAAACCCGGUGAUCUAGCCAUGGGCAGGUUGAAGGUUGGGUAACACUAACUGGAGGACCGAACCGACUAAUGUUGAAAAAUUAGCGGAUGACUUGUGGCUGGGGGUGAAAGGCCAAUCAAACCGGGAGAUAGCUGGUUCUCCCCGAAAGCUAUUUAGGUAGCGCCUCGUGAAUUCAUCUCCGGGGGUAGAGCACUGUUUCGGCAAGGGGGUCAUCCCGACUUACCAACCCGAUGCAAACUGCGAAUACCGGAGAAUGUUAUCACGGGAGACACACGGCGGGUGCUAACGUCCGUCGUGAAGAGGGAAACAACCCAGACCGCCAGCUAAGGUCCCAAAGUCAUGGUUAAGUGGGAAACGAUGUGGGAAGGCCCAGACAGCCAGGAUGUUGGCUUAGAAGCAGCCAUCAUUUAAAGAAAGCGUAAUAGCUCACUGGUCGAGUCGGCCUGCGCGGAAGAUGUAACGGGGCUAAACCAUGCACCGAAGCUGCGGCAGCGACGCUUAUGCGUUGUUGGGUAGGGGAGCGUUCUGUAAGCCUGCGAAGGUGUGCUGUGAGGCAUGCUGGAGGUAUCAGAAGUGCGAAUGCUGACAUAAGUAACGAUAAAGCGGGUGAAAAGCCCGCUCGCCGGAAGACCAAGGGUUCCUGUCCAACGUUAAUCGGGGCAGGGUGAGUCGACCCCUAAGGCGAGGCCGAAAGGCGUAGUCGAUGGGAAACAGGUUAAUAUUCCUGUACUUGGUGUUACUGCGAAGGGGGGACGGAGAAGGCUAUGUUGGCCGGGCGACGGUUGUCCCGGUUUAAGCGUGUAGGCUGGUUUUCCAGGCAAAUCCGGAAAAUCAAGGCUGAGGCGUGAUGACGAGGCACUACGGUGCUGAAGCAACAAAUGCCCUGCUUCCAGGAAAAGCCUCUAAGCAUCAGGUAACAUCAAAUCGUACCCCAAACCGACACAGGUGGUCAGGUAGAGAAUACCAAGGCGCUUGAGAGAACUCGGGUGAAGGAACUAGGCAAAAUGGUGCCGUAACUUCGGGAGAAGGCACGCUGAUAUGUAGGUGAGGUCCCUCGCGGAUGGAGCUGAAAUCAGUCGAAGAUACCAGCUGGCUGCAACUGUUUAUUAAAAACACAGCACUGUGCAAACACGAAAGUGGACGUAUACGGUGUGACGCCUGCCCGGUGCCGGAAGGUUAAUUGAUGGGGUUAGCGCAAGCGAAGCUCUUGAUCGAAGCCCCGGUAAACGGCGGCCGUAACUAUAACGGUCCUAAGGUAGCGAAAUUCCUUGUCGGGUAAGUUCCGACCUGCACGAAUGGCGUAAUGAUGGCCAGGCUGUCUCCACCCGAGACUCAGUGAAAUUGAACUCGCUGUGAAGAUGCAGUGUACCCGCGGCAAGACGGAAAGACCCCGUGAACCUUUACUAUAGCUUGACACUGAACAUUGAGCCUUGAUGUGUAGGAUAGGUGGGAGGCUUUGAAGUGUGGACGCCAGUCUGCAUGGAGCCGACCUUGAAAUACCACCCUUUAAUGUUUGAUGUUCUAACGUUGACCCGUAAUCCGGGUUGCGGACAGUGUCUGGUGGGUAGUUUGACUGGGGCGGUCUCCUCCUAAAGAGUAACGGAGGAGCACGAAGGUUGGCUAAUCCUGGUCGGACAUCAGGAGGUUAGUGCAAUGGCAUAAGCCAGCUUGACUGCGAGCGUGACGGCGCGAGCAGGUGCGAAAGCAGGUCAUAGUGAUCCGGUGGUUCUGAAUGGAAGGGCCAUCGCUCAACGGAUAAAAGGUACUCCGGGGAUAACAGGCUGAUACCGCCCAAGAGUUCAUAUCGACGGCGGUGUUUGGCACCUCGAUGUCGGCUCAUCACAUCCUGGGGCUGAAGUAGGUCCCAAGGGUAUGGCUGUUCGCCAUUUAAAGUGGUACGCGAGCUGGGUUUAGAACGUCGUGAGACAGUUCGGUCCCUAUCUGCCGUGGGCGCUGGAGAACUGAGGGGGGCUGCUCCUAGUACGAGAGGACCGGAGUGGACGCAUCACUGGUGUUCGGGUUGUCAUGCCAAUGGCACUGCCCGGUAGCUAAAUGCGGAAGAGAUAAGUGCUGAAAGCAUCUAAGCACGAAACUUGCCCCGAGAUGAGUUCUCCCUGACCCUUUAAGGGUCCUGAAGGAACGUUGAAGACGACGACGUUGAUAGGCCGGGUGUGUAAGCGCAGCGAUGCGUUGAGCUAACCGGUACUAAUGAACCGUGAGGCUUAACCU";
+const GC_TEST: bool = false; // This is just if you want your start sequence to be purely paired GC-pairs
 
 fn main() {
     const DEFAULT_N_RUNS: usize = 3;
     const DEFAULT_N_STARTS: i64 = 5;
     const MAX_STEPS: i64 = 2_100;
     const WOBBLE_FREQUENCY: f64 = 0.0;
-
+    
     println!("========================================");
     println!("RNA design configuration");
     println!("Press Enter to accept a default value.");
@@ -159,6 +160,9 @@ fn main() {
 
             if RIBOSOMAL_RNA {
                 println!("====RIBOSOMAL SEQUENCE USED====")
+            };
+            if GC_TEST {
+                println!("====INITIAL CANDIDATE WILL HAVE OVERLOAD OF GC-PAIRS====")
             };
 
             let ribo_positions: Vec<usize> = if RIBOSOMAL_RNA {
@@ -330,7 +334,7 @@ fn pk_pair_mismatches(seq: &str, pair_map: &HashMap<usize, usize>, target: &str)
     mismatches
 }
 
-fn mutate_seq(seq_in: &str, structure: &str, wobble_frequency: f64) -> String {
+fn mutate_seq(seq_in: &str, structure: &str, wobble_frequency: f64, last_global : bool) -> String {
     let mut rng = rand::rng();
 
     let pair_map = get_pair_map(structure);
@@ -344,9 +348,20 @@ fn mutate_seq(seq_in: &str, structure: &str, wobble_frequency: f64) -> String {
     let hard_loops: bool = find_hard_loops(structure);
 
     let _nucleotides = ['A', 'U', 'G', 'C'];
-    let paired_nucleotides = ['A', 'U', 'G', 'G', 'G', 'C', 'C', 'C', 'G', 'C'];
 
-    let purines = ['A', 'G'];
+    let paired_nucleotides: &[char] = if GC_TEST || last_global{
+            &['G', 'C']
+        } else {
+            &['A', 'U', 'G', 'G', 'G', 'C', 'C', 'C', 'G', 'C']
+        };
+
+    
+
+    
+
+    //let paired_nucleotides = ['A', 'U', 'G', 'G', 'G', 'C', 'C', 'C', 'G', 'C'];
+
+    let purines = ['A', 'G', 'U'];
 
     let mut mut_seq: Vec<char> = seq_in.chars().collect();
     let mut_struct: Vec<char> = structure.chars().collect();
@@ -568,6 +583,7 @@ fn hill_climb_design(
     reheat_after: i64,
     reheat_temp: f64,
     if_slices: bool,
+    last_global : bool,
 ) -> Vec<DesignResult> {
     let pair_map = get_pair_map(target_structure);
 
@@ -592,12 +608,15 @@ fn hill_climb_design(
         dist_threshold.max(1)
     };
 
-    let p_threshold: f64 = if fixed_fraction > 0.6 {
+    let p_threshold: f64 = if fixed_fraction > 0.6 && !last_global {
         0.70
-    } else if hard_loops {
+    } else if hard_loops && !last_global{
         0.75
     } else {
-        0.60
+        if !last_global{
+        0.60 } else {
+            0.10
+        }
     };
 
     println!(
@@ -625,7 +644,7 @@ fn hill_climb_design(
     let mut current = if RIBOSOMAL_RNA {
         mutate_ribosome(seq_in, target_structure, &n_positions)
     } else {
-        mutate_seq(seq_in, target_structure, wobble_frequency)
+        mutate_seq(seq_in, target_structure, wobble_frequency, last_global)
     };
 
     //let mut current = mutate_seq(seq_in, target_structure, wobble_frequency);
@@ -1091,6 +1110,7 @@ fn multi_start_hill_climb_design(
     max_steps: i64,
     wobble_frequency: f64,
     if_slices: bool,
+    last_global : bool,
 ) -> Vec<DesignResult> {
     let mut all_candidates: Vec<DesignResult> = Vec::new();
     let n_keep_per_run: usize = 1;
@@ -1116,6 +1136,7 @@ fn multi_start_hill_climb_design(
                 reheat_after,
                 reheat_temp,
                 if_slices,
+                last_global,
             )
         })
         .collect();
@@ -1275,6 +1296,7 @@ pub fn decomposed_hill_climb_design(
             max_steps,
             wobble_frequency,
             if_slices,
+            false,
         );
 
         let best = pool
@@ -1400,6 +1422,7 @@ pub fn decomposed_hill_climb_design(
             repair_max_steps,
             wobble_frequency,
             if_slices,
+            false,
         );
 
         match repair_pool.into_iter().min_by_key(|r| r.bp_distance) {
@@ -1418,6 +1441,70 @@ pub fn decomposed_hill_climb_design(
     } else {
         full_seq
     };
+
+    
+    let final_check_result = bp_distance_to_target(&full_seq, target);
+
+    let full_seq = if final_check_result.bp_distance > 0 {
+        let remaining_mismatches: Vec<usize> = if RIBOSOMAL_RNA {
+            identify_mismatches(&final_check_result.structure, target)
+                .into_iter()
+                .filter(|&g| ribo_set.contains(&g))
+                .collect()
+        } else {
+            identify_mismatches(&final_check_result.structure, target)
+        };
+
+        if remaining_mismatches.is_empty() {
+            full_seq
+        } else {
+            
+            let final_repair_max_steps: i64 =
+                ((final_check_result.bp_distance as f64 / 0.008).round() as i64)
+                    .clamp(1, 50);
+
+            println!(
+                "attempting final focused global repair via multi_start_hill_climb_design, \
+                 bp_distance={}, {} remaining mismatched positions, max_steps={}",
+                final_check_result.bp_distance,
+                remaining_mismatches.len(),
+                final_repair_max_steps
+            );
+
+            let if_slices = false;
+
+            let final_repair_pool = multi_start_hill_climb_design(
+                &full_seq,
+                target,
+                remaining_mismatches,
+                n_starts,
+                final_repair_max_steps,
+                wobble_frequency,
+                if_slices,
+                true,
+            );
+
+            match final_repair_pool.into_iter().min_by_key(|r| r.bp_distance) {
+                Some(repaired) if repaired.bp_distance < final_check_result.bp_distance => {
+                    println!(
+                        "final focused global repair improved: {} -> {}",
+                        final_check_result.bp_distance,
+                        repaired.bp_distance
+                    );
+                    repaired.sequence
+                }
+                _ => {
+                    println!(
+                        "final focused global repair made no improvement, keeping current sequence"
+                    );
+                    full_seq
+                }
+            }
+        }
+    } else {
+        full_seq
+    };
+
 
     let result = bp_distance_to_target(&full_seq, target);
 

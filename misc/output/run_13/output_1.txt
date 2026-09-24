@@ -1,0 +1,8 @@
+==== FINAL (run 13) ====
+sequence      : GCACCCGCUCCGCUGCCCCUCCCCGCGGCCGUACGCGGCGGUUCGCCGCCGCGUCCGUGCGAGACGGUCGGGUCCAUAGCUAAUUCGUUAGUUAUGUCGAGCAGAACGUGGGCUCGUACGGGGUGGUGAAGCCUCCACGCCACCACGGCCGCGGGGAGGGGCAGCGCGACUGAAGGAGGCACGGUCGGCCAUCCGUUUCGACGGGUGGCGAGCGGGUGC
+target        : (((((((((((((((((((((((((((((((((((((((((....)))))))))(((((((((.(.((...((((((((((((....)))))))))..)).)...))...).)))))))))(((((((..[[[[[[.)))))))))))))))))))))))))))))((((((..]]]]]].))))))(((((((((....)))))))))))))))))))
+mfe structure : ((((((((((.((((((((((((((((((((.(((((((((....)))))))))(((((((((.(.((...((((((((((((....)))))))))..)).)...))...).)))))))))(((((((..[[[[[[.))))))).)))))))))))))))))))).((((((..]]]]]].))))))(((((((((....)))))))))))))))))))
+bp_distance   : 2
+mfe           : -137.70
+slices        : 12
+Ribosomal RNA used: false
