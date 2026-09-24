@@ -31,7 +31,7 @@ The program is cross-platform. `setup.sh` detects your OS/CPU and stages the cor
 | macOS | Intel (`x86_64-apple-darwin`) | Tested in CI |
 | macOS | Apple Silicon (`aarch64-apple-darwin`) | Tested in CI |
 | Linux | `x86_64-unknown-linux-gnu` |  Tested in CI |
-| Linux | `aarch64-unknown-linux-gnu` | Supported by `setup.sh`, not yet CI-tested |
+| Linux | `aarch64-unknown-linux-gnu` | Should be supported by `setup.sh`, but not yet CI-tested |
 | Windows | `x86_64-pc-windows-gnu` (via MSYS2 MinGW64) | Tested in CI |
 | WSL2 | Treated as Linux | Supported by `setup.sh` |
 
