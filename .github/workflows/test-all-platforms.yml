@@ -14,27 +14,17 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Intel macOS
           - name: macOS Intel
             os: macos-13
             target: x86_64-apple-darwin
 
-          # Apple Silicon macOS
           - name: macOS Apple Silicon
             os: macos-14
             target: aarch64-apple-darwin
 
-          # 64-bit Linux
           - name: Linux x86_64
             os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-
-          # 64-bit Windows using the MinGW/GNU ABI.
-          # ViennaRNA is built as MinGW static .a archives.
-          - name: Windows x86_64 GNU
-            os: windows-latest
-            target: x86_64-pc-windows-gnu
-
 
     steps:
       - name: Check out repository
@@ -44,7 +34,6 @@ jobs:
         shell: bash
         run: rustup target add ${{ matrix.target }}
 
-      # bindgen requires libclang.
       - name: Install libclang on Linux
         if: runner.os == 'Linux'
         run: |
@@ -56,13 +45,6 @@ jobs:
         run: |
           brew install llvm
           echo "LIBCLANG_PATH=$(brew --prefix llvm)/lib" >> "$GITHUB_ENV"
-
-      - name: Install LLVM/libclang on Windows
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          choco install llvm -y
-          "LIBCLANG_PATH=C:\Program Files\LLVM\bin" >> $env:GITHUB_ENV
 
       - name: Show selected native-library directory
         shell: bash
@@ -77,3 +59,110 @@ jobs:
       - name: Run tests
         run: cargo test --locked --target ${{ matrix.target }}
 
+  # This is a separate job, not part of matrix.include.
+  # It needs MSYS2 and must build the MinGW ViennaRNA dependencies first.
+  windows-gnu:
+    name: Windows x86_64 GNU
+    runs-on: windows-latest
+
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up MSYS2 and MinGW
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-clang
+            mingw-w64-x86_64-pkgconf
+            mingw-w64-x86_64-gmp
+            mingw-w64-x86_64-mpfr
+            mingw-w64-x86_64-gsl
+            git
+            curl
+            make
+            autoconf
+            automake
+            libtool
+            bison
+            flex
+
+      - name: Install Rust GNU target
+        shell: pwsh
+        run: rustup target add x86_64-pc-windows-gnu
+
+      - name: Build static ViennaRNA for Windows
+        run: |
+          set -euxo pipefail
+
+          BUILD_ROOT="$RUNNER_TEMP/viennarna-windows-build"
+          mkdir -p "$BUILD_ROOT"
+          cd "$BUILD_ROOT"
+
+          curl --fail --location \
+            --retry 5 \
+            --retry-delay 5 \
+            --connect-timeout 30 \
+            --max-time 300 \
+            -o ViennaRNA-2.7.0.tar.gz \
+            https://github.com/ViennaRNA/ViennaRNA/releases/download/v2.7.0/ViennaRNA-2.7.0.tar.gz
+
+          tar -xf ViennaRNA-2.7.0.tar.gz
+          cd ViennaRNA-2.7.0
+
+          export PATH="/mingw64/bin:$PATH"
+          export PKG_CONFIG_PATH="/mingw64/lib/pkgconfig"
+          export CC=gcc
+          export CXX=g++
+          export CPPFLAGS="-I$PWD/src -I/mingw64/include"
+          export CFLAGS="-std=gnu17 -fno-lto"
+          export CXXFLAGS="-std=gnu++17 -fno-lto -include cstdint"
+          export LDFLAGS="-fno-lto -L/mingw64/lib -lws2_32 -lwinmm"
+
+          ./configure \
+            --prefix="/mingw64" \
+            --disable-shared \
+            --enable-static \
+            --without-openmp \
+            --without-swig \
+            --without-svm \
+            --without-forester
+
+          make -j1
+
+          RNA_ARCHIVE="$(find . -type f -name libRNA.a -print -quit)"
+          test -n "$RNA_ARCHIVE"
+
+          mkdir -p /mingw64/lib
+          cp "$RNA_ARCHIVE" /mingw64/lib/libRNA.a
+
+      - name: Stage Windows GNU libraries for build.rs
+        run: |
+          set -euxo pipefail
+
+          OUT_DIR="$GITHUB_WORKSPACE/vendor/RNAlib/prebuilt/x86_64-pc-windows-gnu"
+          mkdir -p "$OUT_DIR"
+
+          cp /mingw64/lib/libRNA.a "$OUT_DIR/"
+          cp /mingw64/lib/libgmp.a "$OUT_DIR/"
+          cp /mingw64/lib/libmpfr.a "$OUT_DIR/"
+          cp /mingw64/lib/libgsl.a "$OUT_DIR/"
+          cp /mingw64/lib/libgslcblas.a "$OUT_DIR/"
+
+          ls -lah "$OUT_DIR"
+
+      - name: Run Windows GNU tests
+        run: |
+          set -euxo pipefail
+
+          export PATH="/c/Users/runneradmin/.cargo/bin:/mingw64/bin:$PATH"
+          export LIBCLANG_PATH=/mingw64/bin
+
+          cargo test --locked --target x86_64-pc-windows-gnu
