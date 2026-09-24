@@ -24,29 +24,36 @@ The program supports two sequence-generation modes:
 
 ## Supported platforms
 
-Prebuilt static ViennaRNA dependencies are included for:
+The program is cross-platform. `setup.sh` detects your OS/CPU and stages the correct prebuilt (or freshly built) native libraries automatically.
 
-- macOS on `x86_64` / Intel Macs
-- Linux on `x86_64`
+| Platform | Architecture | Status |
+|---|---|---|
+| macOS | Intel (`x86_64-apple-darwin`) | Tested in CI |
+| macOS | Apple Silicon (`aarch64-apple-darwin`) | Tested in CI |
+| Linux | `x86_64-unknown-linux-gnu` |  Tested in CI |
+| Linux | `aarch64-unknown-linux-gnu` | Supported by `setup.sh`, not yet CI-tested |
+| Windows | `x86_64-pc-windows-gnu` (via MSYS2 MinGW64) | Tested in CI |
+| WSL2 | Treated as Linux | Supported by `setup.sh` |
 
-The Linux build is tested in GitHub Actions.
-
-Apple Silicon Macs may be able to run the project through Rosetta, but native Apple Silicon support is not currently documented or guaranteed.
+On macOS and Linux, ViennaRNA is built from source by `setup.sh` since prebuilt static archives aren't distributed for these targets; GSL, MPFR, and GMP are pulled from your package manager (Homebrew or your Linux distro's package manager). On Windows, all native libraries (including ViennaRNA) are built from source using MSYS2 MinGW64.
 
 ## Requirements
 
 ### macOS
 
-- Intel Mac (`x86_64`)
+- Intel or Apple Silicon Mac
+- Xcode Command Line Tools (`xcode-select --install`)
+- Homebrew (installed automatically by `setup.sh` if missing)
 - Git
 - Approximately 500 MB of free disk space for the Rust toolchain and build files
 
 ### Linux
 
-- `x86_64` Linux
+- `x86_64` or `arm64` Linux
 - Git
 - Rust toolchain
 - Clang and `libclang` development files, required by Rust `bindgen`
+- A supported package manager: `apt`, `dnf`, `yum`, `pacman`, or `zypper`
 
 For Ubuntu or Debian-based Linux distributions:
 
@@ -61,12 +68,20 @@ sudo apt-get install -y \
   curl
 ```
 
+### Windows
+
+- Windows 10/11, `x86_64`
+- [MSYS2](https://www.msys2.org/) installed
+- Git (available inside the MSYS2 MinGW64 shell, or installed separately)
+- The build must be run from the **"MSYS2 MinGW x64"** terminal specifically — not PowerShell, CMD, Git Bash, WSL, or the plain MSYS2 terminal
+
 ## Quick start: macOS
+
 Clone the repository and run the setup script:
 ```bash
 git clone https://github.com/HenrikMengkrogen/Ribosome_mut_program.git && cd Ribosome_mut_program && bash setup.sh
 ```
-The setup script installs required tools when needed and builds the project.
+The setup script installs required tools when needed and builds the project. This works the same way on both Intel and Apple Silicon Macs — `setup.sh` detects your CPU architecture and targets it automatically.
 
 If Rust was not installed automatically, install it with:
 ```bash
@@ -78,6 +93,7 @@ source "$HOME/.cargo/env"
 ```
 
 ## Quick start: Linux
+
 Install the system requirements shown above, then install Rust if necessary:
 ```bash
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
@@ -86,11 +102,32 @@ source "$HOME/.cargo/env"
 ```bash
 git clone https://github.com/HenrikMengkrogen/Ribosome_mut_program.git
 cd Ribosome_mut_program
+./setup.sh
 cargo run
 ```
+This works on both `x86_64` and `arm64` Linux; `setup.sh` detects your architecture and builds ViennaRNA from source if a prebuilt archive isn't already vendored.
+
+## Quick start: Windows (MSYS2 MinGW64)
+
+1. Install [MSYS2](https://www.msys2.org/).
+2. Open the **"MSYS2 MinGW x64"** terminal from the Start menu (this specific shell is required).
+3. Clone the repository and run the setup script:
+   ```bash
+   git clone https://github.com/HenrikMengkrogen/Ribosome_mut_program.git
+   cd Ribosome_mut_program
+   ./setup.sh
+   ```
+   This installs the MinGW toolchain, GMP, MPFR, and GSL via `pacman`, builds ViennaRNA from source, and adds the `x86_64-pc-windows-gnu` Rust target.
+4. Run the program, targeting the GNU toolchain:
+   ```bash
+   cargo run --target x86_64-pc-windows-gnu
+   ```
+
+> Native Windows support currently covers `x86_64` only.
 
 ## Running the program
-Run this command from the repository root, the directory containing Cargo.toml:
+
+Run this command from the repository root, the directory containing `Cargo.toml`:
 ```bash
 cargo run
 ```
@@ -98,6 +135,7 @@ For an optimized release build:
 ```bash
 cargo run --release
 ```
+On Windows, pass `--target x86_64-pc-windows-gnu` to both commands.
 
 ## Input and output files
 Input files are located in:
@@ -122,7 +160,6 @@ Generated output files are written to:
 main/misc/output/
 ```
 
-
 ## Native dependencies
 The project uses the following native libraries:
 
@@ -130,16 +167,21 @@ The project uses the following native libraries:
 * GMP — GNU Multiple Precision Arithmetic Library
 * MPFR — multiple-precision floating-point arithmetic
 * GSL — GNU Scientific Library
-* The required static archives are vendored in the repository under:
+
+On macOS, Linux, and Windows, `setup.sh` builds and/or copies these into a target-specific directory under:
 ```bash
 vendor/RNAlib/prebuilt/
 ```
 Platform-specific libraries are stored in directories such as:
 ```bash
 vendor/RNAlib/prebuilt/x86_64-unknown-linux-gnu/
+vendor/RNAlib/prebuilt/aarch64-apple-darwin/
+vendor/RNAlib/prebuilt/x86_64-pc-windows-gnu/
 ```
-The Rust build script selects the correct prebuilt library directory for the current target platform.
+The Rust build script (`build.rs`) selects the correct prebuilt library directory for the current target platform.
 
+## Continuous integration
+Every push and pull request is built and tested across all supported platforms — macOS Intel, macOS Apple Silicon, Linux x86_64, and Windows x86_64 (MSYS2 MinGW64) — via GitHub Actions. See `.github/workflows/test-all-platforms.yml`.
 
 ## Project Structure
 ```bash
@@ -160,7 +202,15 @@ Ribosome_mut_program/
 │       │   └── ViennaRNA/          # ViennaRNA C headers
 │       └── prebuilt/
 │           ├── x86_64-apple-darwin/
-│           └── x86_64-unknown-linux-gnu/
+│           ├── aarch64-apple-darwin/
+│           ├── x86_64-unknown-linux-gnu/
+│           ├── aarch64-unknown-linux-gnu/
+│           │   ├── libRNA.a
+│           │   ├── libgmp.a
+│           │   ├── libmpfr.a
+│           │   ├── libgsl.a
+│           │   └── libgslcblas.a
+│           └── x86_64-pc-windows-gnu/
 │               ├── libRNA.a
 │               ├── libgmp.a
 │               ├── libmpfr.a
@@ -172,3 +222,4 @@ Ribosome_mut_program/
         └── test-all-platforms.yml
 
 ```
+
