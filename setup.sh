@@ -244,7 +244,7 @@ setup_macos() {
         done
     fi
 
-    # Install Homebrew if necessary.
+    # Install Homebrew if needed.
     if ! have brew; then
         need_curl
 
@@ -263,11 +263,11 @@ setup_macos() {
 
     echo "Installing macOS dependencies..."
 
+    # Do NOT add `viennarna` here: Homebrew no longer has that formula.
     brew install \
         gsl \
         mpfr \
         gmp \
-        viennarna \
         llvm \
         autoconf \
         automake \
@@ -277,6 +277,12 @@ setup_macos() {
         flex
 
     mkdir -p "$NATIVE_VENDOR_LIB_DIR" "$VENDOR_DIR/include"
+
+    # Make pkg-config and the compiler find Homebrew packages.
+    export PATH="$(brew --prefix llvm)/bin:$PATH"
+    export PKG_CONFIG_PATH="$(brew --prefix gsl)/lib/pkgconfig:$(brew --prefix mpfr)/lib/pkgconfig:$(brew --prefix gmp)/lib/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
+    export CPPFLAGS="-I$(brew --prefix gsl)/include -I$(brew --prefix mpfr)/include -I$(brew --prefix gmp)/include ${CPPFLAGS:-}"
+    export LDFLAGS="-L$(brew --prefix gsl)/lib -L$(brew --prefix mpfr)/lib -L$(brew --prefix gmp)/lib ${LDFLAGS:-}"
 
     echo "Copying GSL, MPFR, and GMP static libraries..."
 
@@ -293,24 +299,12 @@ setup_macos() {
             die "Could not find static library $library from Homebrew formula $formula."
     done
 
-    # Prefer Homebrew's libRNA.a when supplied. Build from source otherwise.
-    if copy_brew_lib viennarna libRNA.a; then
-        echo "Using Homebrew ViennaRNA static library."
-
-        local rna_include
-        rna_include="$(brew --prefix viennarna)/include/ViennaRNA"
-
-        if [[ -d "$rna_include" ]]; then
-            mkdir -p "$VENDOR_DIR/include"
-            cp -R "$rna_include" "$VENDOR_DIR/include/"
-        fi
-    else
-        warn "Homebrew did not provide static libRNA.a; building ViennaRNA from source."
-        build_viennarna_native
-    fi
+    # ViennaRNA must be built from source on macOS.
+    build_viennarna_native
 
     ok "macOS native libraries ready"
 }
+
 
 # ── Linux ───────────────────────────────────────────────────────
 
