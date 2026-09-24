@@ -463,6 +463,8 @@ build_viennarna_native() {
     need_curl
 
     local temp_dir
+    local rna_archive
+
     temp_dir="$(mktemp -d)"
 
     echo "Building ViennaRNA $VIENNARNA_VERSION from source..."
@@ -496,22 +498,40 @@ build_viennarna_native() {
         --disable-openmp
 
     make -j"$(cpu_count)"
-    make install
+
+    # Do not use `make install`.
+    #
+    # ViennaRNA's documentation installation target can fail on macOS.
+    # We only need the static archive and C headers for the Rust build.
+    rna_archive="$(find . -type f -name libRNA.a -print -quit)"
+
+    [[ -n "$rna_archive" && -f "$rna_archive" ]] ||
+        die "ViennaRNA build completed but did not produce libRNA.a."
+
+    mkdir -p "$NATIVE_VENDOR_LIB_DIR" "$VENDOR_DIR/include"
+
+    # build.rs expects the archive directly in the target-specific directory.
+    cp "$rna_archive" "$NATIVE_VENDOR_LIB_DIR/libRNA.a"
+
+    # Preserve the expected include layout:
+    # vendor/RNAlib/include/ViennaRNA/*.h
+    #
+    # The configured source tree includes generated headers needed by ViennaRNA.
+    rm -rf "$VENDOR_DIR/include/ViennaRNA"
+    cp -R "$PWD/src/ViennaRNA" "$VENDOR_DIR/include/"
 
     popd >/dev/null
-
-    # ViennaRNA installs archives in <prefix>/lib/.
-    # build.rs expects libRNA.a directly inside PREBUILT_DIR.
-    if [[ -f "$NATIVE_VENDOR_LIB_DIR/lib/libRNA.a" ]]; then
-        mv "$NATIVE_VENDOR_LIB_DIR/lib/libRNA.a" \
-            "$NATIVE_VENDOR_LIB_DIR/libRNA.a"
-    fi
-
     rm -rf "$temp_dir"
 
     [[ -f "$NATIVE_VENDOR_LIB_DIR/libRNA.a" ]] ||
-        die "ViennaRNA build did not produce $NATIVE_VENDOR_LIB_DIR/libRNA.a"
+        die "ViennaRNA library was not copied to $NATIVE_VENDOR_LIB_DIR/libRNA.a"
+
+    [[ -d "$VENDOR_DIR/include/ViennaRNA" ]] ||
+        die "ViennaRNA headers were not copied to $VENDOR_DIR/include/ViennaRNA"
+
+    ok "ViennaRNA static library and headers staged"
 }
+
 
 # ── Native Windows through MSYS2 MinGW64 ────────────────────────
 
