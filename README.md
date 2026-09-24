@@ -137,6 +137,15 @@ cargo run --release
 ```
 On Windows, pass `--target x86_64-pc-windows-gnu` to both commands.
 
+After the script starts running you will be asked to declare how many rounds it will run. Write a number and press enter.
+If you dont write anything the default is set to three rounds.
+
+After this you will be asked how many rounds in parallel the multi_start_hill_climb_design() will run. The default here is set to four.
+Remember the more runs you decide to have the more cores you will use so choose this with consideration.
+
+Once the script is finished running you will have the option to view the data as a scrollable element in terminal (y/n). 
+This is rather useful instead of having to go trough multiple runs and files to find your desired candidate(s).
+
 ## Input and output files
 Input files are located in:
 ```bash
