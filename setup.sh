@@ -24,21 +24,17 @@ ok()   { echo -e "${GREEN}✓ $*${NC}"; }
 warn() { echo -e "${YELLOW}! $*${NC}"; }
 die()  { echo -e "${RED}✗ $*${NC}" >&2; exit 1; }
 
-# ViennaRNA versions.
-#
-# The Windows MinGW build uses 2.7.0 because this is the version verified
-# by the Windows GitHub Actions workflow.
+# ViennaRNA version for macOS/Linux source builds.
 VIENNARNA_VERSION="${VIENNARNA_VERSION:-2.6.4}"
+
+# ViennaRNA version for Windows MinGW source builds.
 VIENNARNA_WINDOWS_VERSION="${VIENNARNA_WINDOWS_VERSION:-2.7.0}"
 
-# Always run relative to this script, even when invoked from another folder.
+# Always work from the repository root, where this script lives.
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
 PROJECT_DIR="$(pwd)"
 VENDOR_DIR="$PROJECT_DIR/vendor/RNAlib"
-NATIVE_VENDOR_LIB_DIR="$VENDOR_DIR/lib"
-WINDOWS_TARGET="x86_64-pc-windows-gnu"
-WINDOWS_VENDOR_LIB_DIR="$VENDOR_DIR/prebuilt/$WINDOWS_TARGET"
 
 echo "Ribologic Setup"
 echo "================"
@@ -83,7 +79,39 @@ if [[ "$OS" == "windows" && "$ARCH" != "x86_64" ]]; then
     die "Native Windows setup currently supports x86_64 only."
 fi
 
+# Map the local machine to the exact Rust target/build.rs directory name.
+case "$OS:$ARCH" in
+    macos:x86_64)
+        RUST_TARGET="x86_64-apple-darwin"
+        ;;
+    macos:arm64)
+        RUST_TARGET="aarch64-apple-darwin"
+        ;;
+    linux:x86_64)
+        RUST_TARGET="x86_64-unknown-linux-gnu"
+        ;;
+    linux:arm64)
+        RUST_TARGET="aarch64-unknown-linux-gnu"
+        ;;
+    windows:x86_64)
+        RUST_TARGET="x86_64-pc-windows-gnu"
+        ;;
+    *)
+        die "No Rust target mapping is available for $OS ($ARCH)."
+        ;;
+esac
+
+# This exact location must match what build.rs expects.
+PREBUILT_DIR="$VENDOR_DIR/prebuilt/$RUST_TARGET"
+
+# Names used by setup functions below.
+NATIVE_VENDOR_LIB_DIR="$PREBUILT_DIR"
+WINDOWS_TARGET="$RUST_TARGET"
+WINDOWS_VENDOR_LIB_DIR="$PREBUILT_DIR"
+
 ok "Detected $OS ($ARCH)"
+ok "Rust target: $RUST_TARGET"
+ok "Native library directory: $PREBUILT_DIR"
 
 # ── Common helpers ──────────────────────────────────────────────
 
@@ -135,12 +163,13 @@ setup_rust() {
     fi
 
     have cargo || die "Rust installation failed; cargo was not found."
+
     ok "Rust ready: $(cargo --version)"
 }
 
-# ── Native macOS/Linux library checks ───────────────────────────
+# ── Library checks ──────────────────────────────────────────────
 
-NATIVE_VENDOR_LIBS=(
+REQUIRED_LIBRARIES=(
     libRNA.a
     libgsl.a
     libgslcblas.a
@@ -151,27 +180,17 @@ NATIVE_VENDOR_LIBS=(
 native_vendor_complete() {
     local lib
 
-    for lib in "${NATIVE_VENDOR_LIBS[@]}"; do
+    for lib in "${REQUIRED_LIBRARIES[@]}"; do
         [[ -f "$NATIVE_VENDOR_LIB_DIR/$lib" ]] || return 1
     done
 
     return 0
 }
 
-# ── Windows MinGW library checks ────────────────────────────────
-
-WINDOWS_VENDOR_LIBS=(
-    libRNA.a
-    libgsl.a
-    libgslcblas.a
-    libmpfr.a
-    libgmp.a
-)
-
 windows_vendor_complete() {
     local lib
 
-    for lib in "${WINDOWS_VENDOR_LIBS[@]}"; do
+    for lib in "${REQUIRED_LIBRARIES[@]}"; do
         [[ -f "$WINDOWS_VENDOR_LIB_DIR/$lib" ]] || return 1
     done
 
@@ -189,11 +208,12 @@ copy_brew_lib() {
     prefix="$(brew --prefix "$formula")"
     source_file="$prefix/lib/$lib"
 
+    # Homebrew occasionally places archives elsewhere in the formula cellar.
     if [[ ! -f "$source_file" ]]; then
         source_file="$(
             find "$(brew --cellar "$formula")" \
-                -name "$lib" \
                 -type f \
+                -name "$lib" \
                 -print \
                 -quit 2>/dev/null || true
         )"
@@ -211,9 +231,10 @@ setup_macos() {
     if ! xcode-select -p >/dev/null 2>&1; then
         echo "Installing Xcode Command Line Tools..."
         xcode-select --install || true
-        die "Finish installing Xcode Command Line Tools, then run ./setup.sh again."
+        die "Finish installing Xcode Command Line Tools, then re-run ./setup.sh."
     fi
 
+    # Find an existing Homebrew installation if brew is not already on PATH.
     if ! have brew; then
         for candidate in /opt/homebrew/bin/brew /usr/local/bin/brew; do
             if [[ -x "$candidate" ]]; then
@@ -223,8 +244,10 @@ setup_macos() {
         done
     fi
 
+    # Install Homebrew if necessary.
     if ! have brew; then
         need_curl
+
         echo "Installing Homebrew..."
         /bin/bash -c \
             "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -239,7 +262,19 @@ setup_macos() {
     have brew || die "Homebrew installation failed."
 
     echo "Installing macOS dependencies..."
-    brew install gsl mpfr gmp viennarna llvm
+
+    brew install \
+        gsl \
+        mpfr \
+        gmp \
+        viennarna \
+        llvm \
+        autoconf \
+        automake \
+        libtool \
+        pkg-config \
+        bison \
+        flex
 
     mkdir -p "$NATIVE_VENDOR_LIB_DIR" "$VENDOR_DIR/include"
 
@@ -255,9 +290,10 @@ setup_macos() {
         local library="${pair##*:}"
 
         copy_brew_lib "$formula" "$library" ||
-            die "Could not find $library in Homebrew formula $formula."
+            die "Could not find static library $library from Homebrew formula $formula."
     done
 
+    # Prefer Homebrew's libRNA.a when supplied. Build from source otherwise.
     if copy_brew_lib viennarna libRNA.a; then
         echo "Using Homebrew ViennaRNA static library."
 
@@ -265,6 +301,7 @@ setup_macos() {
         rna_include="$(brew --prefix viennarna)/include/ViennaRNA"
 
         if [[ -d "$rna_include" ]]; then
+            mkdir -p "$VENDOR_DIR/include"
             cp -R "$rna_include" "$VENDOR_DIR/include/"
         fi
     else
@@ -280,6 +317,7 @@ setup_macos() {
 install_linux_packages() {
     if have apt-get; then
         echo "Using apt..."
+
         $SUDO apt-get update
         $SUDO apt-get install -y \
             build-essential \
@@ -287,12 +325,18 @@ install_linux_packages() {
             pkg-config \
             clang \
             libclang-dev \
+            autoconf \
+            automake \
+            libtool \
+            bison \
+            flex \
             libgsl-dev \
             libmpfr-dev \
             libgmp-dev
 
     elif have dnf; then
         echo "Using dnf..."
+
         $SUDO dnf install -y \
             gcc \
             gcc-c++ \
@@ -301,6 +345,11 @@ install_linux_packages() {
             pkgconf-pkg-config \
             clang \
             clang-libs \
+            autoconf \
+            automake \
+            libtool \
+            bison \
+            flex \
             gsl-devel \
             gsl-static \
             mpfr-devel \
@@ -309,6 +358,7 @@ install_linux_packages() {
 
     elif have yum; then
         echo "Using yum..."
+
         $SUDO yum install -y \
             gcc \
             gcc-c++ \
@@ -316,23 +366,35 @@ install_linux_packages() {
             curl \
             pkgconfig \
             clang \
+            autoconf \
+            automake \
+            libtool \
+            bison \
+            flex \
             gsl-devel \
             mpfr-devel \
             gmp-devel
 
     elif have pacman; then
         echo "Using pacman..."
+
         $SUDO pacman -Sy --needed --noconfirm \
             base-devel \
             curl \
             pkgconf \
             clang \
+            autoconf \
+            automake \
+            libtool \
+            bison \
+            flex \
             gsl \
             mpfr \
             gmp
 
     elif have zypper; then
         echo "Using zypper..."
+
         $SUDO zypper --non-interactive install \
             gcc \
             gcc-c++ \
@@ -341,12 +403,17 @@ install_linux_packages() {
             pkg-config \
             clang \
             libclang-devel \
+            autoconf \
+            automake \
+            libtool \
+            bison \
+            flex \
             gsl-devel \
             mpfr-devel \
             gmp-devel
 
     else
-        die "No supported Linux package manager found. Install a C compiler, make, curl, libclang, GSL, MPFR, and GMP development packages manually."
+        die "No supported Linux package manager found. Install a compiler, make, curl, libclang, GSL, MPFR, GMP, and autotools manually."
     fi
 }
 
@@ -373,13 +440,15 @@ find_static_lib() {
 
 setup_linux() {
     install_linux_packages
+
     mkdir -p "$NATIVE_VENDOR_LIB_DIR" "$VENDOR_DIR/include"
 
+    # Most Linux distributions do not package static ViennaRNA.
     if [[ ! -f "$NATIVE_VENDOR_LIB_DIR/libRNA.a" ]]; then
         build_viennarna_native
     fi
 
-    echo "Copying Linux static GSL, MPFR, and GMP libraries..."
+    echo "Copying Linux GSL, MPFR, and GMP static libraries..."
 
     local lib
     local source_file
@@ -419,7 +488,7 @@ build_viennarna_native() {
     fi
 
     ./configure \
-        --prefix="$VENDOR_DIR" \
+        --prefix="$NATIVE_VENDOR_LIB_DIR" \
         --disable-shared \
         --enable-static \
         --with-pic \
@@ -436,6 +505,13 @@ build_viennarna_native() {
     make install
 
     popd >/dev/null
+
+    # ViennaRNA installs archives in <prefix>/lib/.
+    # build.rs expects libRNA.a directly inside PREBUILT_DIR.
+    if [[ -f "$NATIVE_VENDOR_LIB_DIR/lib/libRNA.a" ]]; then
+        mv "$NATIVE_VENDOR_LIB_DIR/lib/libRNA.a" \
+            "$NATIVE_VENDOR_LIB_DIR/libRNA.a"
+    fi
 
     rm -rf "$temp_dir"
 
@@ -543,6 +619,9 @@ case "$OS" in
         else
             setup_macos
         fi
+
+        native_vendor_complete ||
+            die "macOS libraries were not staged correctly in $NATIVE_VENDOR_LIB_DIR."
         ;;
 
     linux)
@@ -551,6 +630,9 @@ case "$OS" in
         else
             setup_linux
         fi
+
+        native_vendor_complete ||
+            die "Linux libraries were not staged correctly in $NATIVE_VENDOR_LIB_DIR."
         ;;
 
     windows)
@@ -559,6 +641,9 @@ case "$OS" in
         else
             setup_windows
         fi
+
+        windows_vendor_complete ||
+            die "Windows libraries were not staged correctly in $WINDOWS_VENDOR_LIB_DIR."
         ;;
 esac
 
@@ -568,10 +653,10 @@ echo ""
 
 if [[ "$OS" == "windows" ]]; then
     echo "Run the program with:"
-    echo "  cargo run --target $WINDOWS_TARGET"
+    echo "  cargo run --target $RUST_TARGET"
     echo ""
     echo "Run tests with:"
-    echo "  cargo test --target $WINDOWS_TARGET"
+    echo "  cargo test --target $RUST_TARGET"
 else
     echo "Run the program with:"
     echo "  cargo run"
@@ -579,4 +664,3 @@ else
     echo "Run tests with:"
     echo "  cargo test"
 fi
-
